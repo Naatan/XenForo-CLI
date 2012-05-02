@@ -1,0 +1,3 @@
+[submodule "library/PHP-CLI"]
+	path = library/PHP-CLI
+	url = https://github.com/Naatan/PHP-CLI

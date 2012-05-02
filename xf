@@ -1,0 +1,30 @@
+#!/usr/bin/php -d xdebug.remote_autostart=1
+<?php
+require_once(dirname(__FILE__) . '/autoloader.php');
+require_once(dirname(__FILE__) . '/library/PHP-CLI/cli.php');
+
+$baseDir = XfCli::baseDir();
+chdir($baseDir);
+
+$xfLibrary = $baseDir . '/library/';
+ 
+// Initialize the xenforo autoloader
+require_once($xfLibrary . 'XenForo/Autoloader.php');
+XenForo_Autoloader::getInstance()->setupAutoloader($xfLibrary);
+ 
+// Initialize XenForo App
+XenForo_Application::initialize($xfLibrary, $xfLibrary);
+ 
+unset($xfLibrary);
+
+if (@ini_get('open_basedir'))
+{
+	// many servers don't seem to set include_path correctly with open_basedir, so don't use it
+	set_include_path(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'library' . PATH_SEPARATOR . '.');
+}
+else
+{
+	set_include_path(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'library' . PATH_SEPARATOR . '.' . PATH_SEPARATOR . get_include_path());
+}
+
+new XfCli;
