@@ -32,6 +32,8 @@ class CLI_Xf_Listener_Add extends CLI
 	
 	protected function addListenerToDb($addonName, $listener)
 	{
+		CLI::printInfo("Adding event listener to database.. ", false);
+		
 		$eventModel = new XenForo_Model_CodeEvent;
 		$events 	= $eventModel->getEventListenersByAddOn($addonName);
 		
@@ -65,6 +67,8 @@ class CLI_Xf_Listener_Add extends CLI
 			$dw = XenForo_DataWriter::create('XenForo_DataWriter_CodeEventListener');
 			$dw->bulkSet($dwInput);
 			$dw->save();
+			
+			CLI::printInfo("ok");
 		}
 		catch (Exception $e)
 		{

@@ -16,18 +16,38 @@ class CLI_Xf_Extend extends CLI
 	);
 	
 	protected $_help = '
-		Example: xf extend XenForo_PublicController_Account MyAddon_Controller_Account
+		Examples:
+			xf extend XenForo_PublicController_Account MyAddon_Controller_Account
+			xf extend XenForo_PublicController_Account MyAddonName (creates MyAddonName_Controller_Account)
+			xf extend XenForo_PublicController_Account (Must be executed in addon folder, creates MyAddonName_Controller_Account)
 	';
 	
 	public function run()
 	{
 		
-		if ( ! $extend = $this->getArgumentAt(0) OR  ! $extendWith = $this->getArgumentAt(1))
+		if ( ! $extend = $this->getArgumentAt(0))
 		{
 			$this->showHelp(true);
 		}
 		
+		if ( ! $extendWith = $this->getArgumentAt(1))
+		{
+			if ( ! $addonName = XfCli_Application::getAddonName())
+			{
+				$this->showHelp(true);
+			}
+			else
+			{
+				$extendWith = $addonName . substr($extend, strpos($extend, '_'));
+			}
+		}
+		
 		$addonName = XfCli_Application::getAddonName($extendWith);
+		
+		if ($addonName == $extendWith)
+		{
+			$extendWith = $addonName . substr($extend, strpos($extend, '_'));
+		}
 		
 		if (empty($addonName))
 		{
@@ -51,6 +71,8 @@ class CLI_Xf_Extend extends CLI
 	
 	protected function addExtendToDb($addonName, $extend, $extendWith)
 	{
+		CLI::printInfo("Adding event listener to database.. ", false);
+		
 		$classType = $this->getClassType($extend);
 		
 		$eventModel = new XenForo_Model_CodeEvent;
@@ -66,6 +88,7 @@ class CLI_Xf_Extend extends CLI
 					$event['callback_method'] 	== 'load_class_' . $classType
 				)
 				{
+					CLI::printInfo("skipped (already exists)");
 					return;
 				}
 			}
@@ -86,6 +109,8 @@ class CLI_Xf_Extend extends CLI
 			$dw = XenForo_DataWriter::create('XenForo_DataWriter_CodeEventListener');
 			$dw->bulkSet($dwInput);
 			$dw->save();
+			
+			CLI::printInfo("ok");
 		}
 		catch (Exception $e)
 		{

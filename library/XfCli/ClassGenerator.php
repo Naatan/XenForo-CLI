@@ -73,10 +73,11 @@ class XfCli_ClassGenerator
 	
 	public static function appendMethod($className, $methodName, $append, array $params, $flags = null, $ignoreRegex = null)
 	{
+		CLI::printInfo('Appending data to method "' . $methodName . '", in class "' . $className . '".. ', false);
 		
 		if ( ! $class = self::get($className))
 		{
-			CLI::bail('Could not append method "'.$methodName.'" to nonexistant class: ' . $className);
+			CLI::bail('Could not append method "'.$methodName.'" to nonexistant class "' . $className . '"');
 		}
 		
 		$method 		= $class->getMethod($methodName);
@@ -94,6 +95,7 @@ class XfCli_ClassGenerator
 			
 			if ($ignoreRegex != null AND preg_match($ignoreRegex, $body))
 			{
+				CLI::printInfo('skipped (already exists)');
 				return;
 			}
 		}
@@ -124,6 +126,8 @@ class XfCli_ClassGenerator
 		
 		$class->setMethod($method);
 		
+		CLI::printInfo('Ok');
+		
 		return self::save($class);
 		
 	}
@@ -139,6 +143,15 @@ class XfCli_ClassGenerator
 		
 		if ( ! file_exists($filePath) OR $class != null)
 		{
+			if (file_exists($filePath))
+			{
+				CLI::printInfo('Updating class "' . $className . '".. ', false);
+			}
+			else
+			{
+				CLI::printInfo('Creating class "' . $className . '".. ', false);
+			}
+			
 			$file 	= new Zend_CodeGenerator_Php_File();
 			
 			if ($class == null)
@@ -156,13 +169,15 @@ class XfCli_ClassGenerator
 			
 			if ( ! is_dir(dirname($filePath)) OR ! file_put_contents($filePath, trim($file->generate())))
 			{
-				CLI::bail("Could not generate class '$className' as the file could not be created: " . $filePath);
+				CLI::bail("File could not be created: " . $filePath);
 			}
 		}
 		else
 		{
-			CLI::bail("Could not generate class '$className' as the file it maps to is already in use: " . $filePath);
+			CLI::bail("File already exists: " . $filePath);
 		}
+		
+		CLI::printInfo('Ok');
 		
 		return self::get($className);
 	}
