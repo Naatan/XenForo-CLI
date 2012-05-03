@@ -1,6 +1,6 @@
 <?php
 
-class XfCli_Extend extends CLI
+class CLI_Xf_Extend extends CLI
 {
 	
 	protected $classTypes = array(
@@ -27,7 +27,7 @@ class XfCli_Extend extends CLI
 			$this->showHelp(true);
 		}
 		
-		$addonName = XfCli::getAddonName($extendWith);
+		$addonName = XfCli_Application::getAddonName($extendWith);
 		
 		if (empty($addonName))
 		{
@@ -37,13 +37,13 @@ class XfCli_Extend extends CLI
 		$this->addExtendToFile($addonName, $extend, $extendWith);
 		$this->addExtendToDb($addonName, $extend, $extendWith);
 		
-		if ( ! ClassGenerator::classExists($extendWith))
+		if ( ! XfCli_ClassGenerator::classExists($extendWith))
 		{
 			$class 	= new Zend_CodeGenerator_Php_Class();
 			$class->setName($extendWith);
 			$class->setExtendedClass('XFCP_' . $extendWith);
 			
-			ClassGenerator::create($extendWith, $class);
+			XfCli_ClassGenerator::create($extendWith, $class);
 		}
 		
 		echo 'Class Extended';
@@ -119,8 +119,8 @@ class XfCli_Extend extends CLI
 		
 		$ignoreRegex = '/\$extend\[\]\s*\=\s*(?:\'|\")'.$extendWith.'(?:\'|\")/';
 		
-		ClassGenerator::create($className);
-		ClassGenerator::appendMethod($className, $methodName, $body, $params, array('static'), $ignoreRegex);
+		XfCli_ClassGenerator::create($className);
+		XfCli_ClassGenerator::appendMethod($className, $methodName, $body, $params, array('static'), $ignoreRegex);
 	}
 	
 	protected function getClassType($className)

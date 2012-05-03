@@ -1,6 +1,6 @@
 <?php
 
-class XfCli_Listener_Add extends CLI
+class CLI_Xf_Listener_Add extends CLI
 {
 	
 	protected $_help = '
@@ -16,7 +16,7 @@ class XfCli_Listener_Add extends CLI
 		}
 		
 		$addonName 	= $this->getArgumentAt(1);
-		$addonName  = XfCli::getAddonName($addonName);
+		$addonName  = XfCli_Application::getAddonName($addonName);
 		
 		if (empty($addonName))
 		{
@@ -80,8 +80,8 @@ class XfCli_Listener_Add extends CLI
 		$params = array();
 		$body = '';
 		
-		ClassGenerator::create($className);
-		ClassGenerator::appendMethod($className, $methodName, $body, $params, array('static'));
+		XfCli_ClassGenerator::create($className);
+		XfCli_ClassGenerator::appendMethod($className, $methodName, $body, $params, array('static'));
 	}
 	
 }

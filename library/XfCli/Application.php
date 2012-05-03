@@ -1,19 +1,30 @@
 <?php
 
-class XfCli extends CLI
+class XfCli_Application
 {
-	
-	protected $_nameSpace 	= 'XfCli';
 	
 	public static $_inAddonDir 	= false;
 	public static $_baseDir 	= null;
-
-	public function __init()
+	
+	public static function initialize()
 	{
-		$this->detectXenForo();
+		self::registerAutoloader();
+		self::setIncludePaths();
+		
+		new CLI_Xf();
 	}
 	
-	public static function baseDir()
+	protected static function registerAutoloader()
+	{
+		spl_autoload_register(array('XfCli_Autoloader', 'run'));
+	}
+	
+	protected static function setIncludePaths()
+	{
+		set_include_path(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . PATH_SEPARATOR . '.' . PATH_SEPARATOR . get_include_path());
+	}
+	
+	public static function xfBaseDir()
 	{
 		if (self::$_baseDir == null)
 		{

@@ -1,6 +1,6 @@
 <?php
 
-class ClassGenerator
+class XfCli_ClassGenerator
 {
 	
 	public static function get($className)
@@ -61,14 +61,14 @@ class ClassGenerator
 	
 	public static function getClassPath($className, $relative = false)
 	{
-		$fileName = _CLI_Autoloader_FileName($className);
+		$fileName = XfCli_Autoloader::getFileName($className);
 		
 		if ($relative)
 		{
 			return $fileName;
 		}
 		
-		return XfCli::baseDir() . DIRECTORY_SEPARATOR . 'library' . DIRECTORY_SEPARATOR . $fileName;
+		return XfCli_Application::xfBaseDir() . DIRECTORY_SEPARATOR . 'library' . DIRECTORY_SEPARATOR . $fileName;
 	}
 	
 	public static function appendMethod($className, $methodName, $append, array $params, $flags = null, $ignoreRegex = null)
