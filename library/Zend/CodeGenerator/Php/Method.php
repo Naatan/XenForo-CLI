@@ -167,12 +167,6 @@ class Zend_CodeGenerator_Php_Method extends Zend_CodeGenerator_Php_Member_Abstra
      */
     public function setBody($body)
     {
-		if ($indent = preg_match('/^(\s*)/', $body, $match))
-		{
-			$indent = $match[1];
-			$body  = preg_replace('/^'.$indent.'/m', '', $body);
-		}
-		
         $this->_body = $body;
         return $this;
     }

@@ -27,15 +27,24 @@ class XfCli_Extend extends CLI
 			$this->showHelp(true);
 		}
 		
-		$addonName = substr($extendWith, 0, strpos($extendWith, '_'));
+		$addonName = XfCli::getAddonName($extendWith);
 		
 		if (empty($addonName))
 		{
-			$this->die('Could not detect addon name from class name: ' . $extendWith);
+			$this->bail('Could not detect addon name from class name: ' . $extendWith);
 		}
 		
 		$this->addExtendToFile($addonName, $extend, $extendWith);
 		$this->addExtendToDb($addonName, $extend, $extendWith);
+		
+		if ( ! ClassGenerator::classExists($extendWith))
+		{
+			$class 	= new Zend_CodeGenerator_Php_Class();
+			$class->setName($extendWith);
+			$class->setExtendedClass('XFCP_' . $extendWith);
+			
+			ClassGenerator::create($extendWith, $class);
+		}
 		
 		echo 'Class Extended';
 	}
@@ -72,64 +81,46 @@ class XfCli_Extend extends CLI
 			'addon_id' 			=> $addonName
 		);
 		
-		$dw = XenForo_DataWriter::create('XenForo_DataWriter_CodeEventListener');
-		$dw->bulkSet($dwInput);
-		$dw->save();
+		try
+		{
+			$dw = XenForo_DataWriter::create('XenForo_DataWriter_CodeEventListener');
+			$dw->bulkSet($dwInput);
+			$dw->save();
+		}
+		catch (Exception $e)
+		{
+			$this->bail($e->getMessage());
+		}
 	}
 	
 	protected function addExtendToFile($addonName, $extend, $extendWith)
 	{
 		$className 		= $addonName . '_Listen';
 		$classType 		= $this->getClassType($extend);
-		$fileGenerator 	= XfCli::getFileGenerator($className);
-		$classGenerator = $fileGenerator->getClass($className);
-		$filePath 		= XfCli::getClassPath($className);
 		$methodName 	= 'load_class_' . $classType;
-		$method 		= $classGenerator->getMethod($methodName);
 		
-		$fileGenerator->setIndentation('	');
-		$classGenerator->setIndentation('	');
-		
-		if ( ! $method)
-		{
-			$body 	= '';
-		}
-		else
-		{
-			$body 	= $method->getBody() . "\n";
-			if (preg_match('/\$extend\[\]\s*\=\s*(?:\'|\")'.$extendWith.'(?:\'|\")/', $body))
-			{
-				return false;
-			}
-		}
-		
-		$method = new Zend_CodeGenerator_Php_Method(array(
-			'name' => $methodName
-		));
-		$method->setIndentation('	');
+		$params = array();
 		
 		$param = new Zend_CodeGenerator_Php_Parameter;
 		$param->setName('class');
-		$method->setParameter($param);
+		$params[] = $param;
 		
 		$param = new Zend_CodeGenerator_Php_Parameter;
 		$param->setName('extend');
 		$param->setType('array');
-		$param->setPassedByReference(true);			
-		$method->setParameter($param);
+		$param->setPassedByReference(true);
+		$params[] = $param;
 		
-		$body .= "\n";
+		$body  = "\n";
 		$body .= "if (\$class == '$extend' AND ! in_array('$extendWith', \$extend))";
 		$body .= "\n{\n";
 		$body .= "	\$extend[] = '$extendWith';";
-		$body .= "\n}\n";
+		$body .= "\n}";
 		
-		$method->setBody($body);
+		$ignoreRegex = '/\$extend\[\]\s*\=\s*(?:\'|\")'.$extendWith.'(?:\'|\")/';
 		
-		$classGenerator->setMethod($method);
-		$fileGenerator->setClass($classGenerator);
-		
-		file_put_contents($filePath, $fileGenerator->generate());
+		ClassGenerator::create($className);
+		ClassGenerator::appendMethod($className, $methodName, $body, $params, array('static'), $ignoreRegex);
 	}
 	
 	protected function getClassType($className)

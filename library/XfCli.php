@@ -46,60 +46,24 @@ class XfCli extends CLI
 		}
 	}
 	
-	public static function getClassPath($className, $relative = false)
+	public static function getAddonName($className = null)
 	{
-		$fileName = _CLI_Autoloader_FileName($className);
-		
-		if ($relative)
+		if ( ! empty($className))
 		{
-			return $fileName;
+			if (preg_match('/^[a-z]*$/i', $className))
+			{
+				return $className;
+			}
+			
+			return substr($className, 0, strpos($className, '_'));
+		}
+		else if (self::$_inAddonDir)
+		{
+			$baseDir = getcwd();
+			return basename($baseDir);
 		}
 		
-		return self::baseDir() . '/library/' . $fileName;
-	}
-	
-	public static function getFileGenerator($className)
-	{
-		$exists = false;
-		
-		try // Workaround XF's Autoloader that doesn't play nice
-		{
-			$exists = class_exists($className);
-		} catch (Exception $e) {}
-		
-		$filePath = self::getClassPath($className);
-		
-		if ( ! $exists)
-		{
-			if ( ! file_exists($filePath))
-			{
-				$file = new Zend_CodeGenerator_Php_File(array(
-					'classes' => array(
-						new Zend_CodeGenerator_Php_Class(array(
-							'name'    => $className
-						))
-					)
-				));
-				
-				if ( ! is_dir(dirname($filePath)))
-				{
-					mkdir(dirname($filePath), 0755, true);
-				}
-				
-				if ( ! is_dir(dirname($filePath)) OR ! file_put_contents($filePath, $file->generate()))
-				{
-					self::bail("Could not generate class '$className' as the file could not be created: " . $filePath);
-				}
-			}
-			else
-			{
-				self::bail("Could not generate class '$className' as the file it maps to is already in use: " . $filePath);
-			}
-		}
-		
-		return Zend_CodeGenerator_Php_File::fromReflectedFileName(
-			$filePath, false
-		);
+		return false;
 	}
 	
 }
