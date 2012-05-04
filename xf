@@ -13,6 +13,8 @@ XenForo_Autoloader::getInstance()->setupAutoloader($xfLibrary);
  
 // Initialize XenForo App
 XenForo_Application::initialize($xfLibrary, $xfLibrary);
+$dependencies = new XenForo_Dependencies_Public();
+$dependencies->preLoadData();
  
 unset($xfLibrary);
 
