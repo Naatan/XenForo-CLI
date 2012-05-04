@@ -15,7 +15,7 @@ class CLI_Xf extends CLI
 			$callStructure 		= $this->_callStructure;
 			$callStructure[] 	= $this;
 			
-			new $class($class, $arguments, $this->flags, $callStructure);
+			new $class($class, $arguments, $this->getFlags(), $this->getOptions(), $callStructure);
 		}
 		else
 		{
