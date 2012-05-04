@@ -55,7 +55,6 @@ class CLI_Xf_Extend extends CLI
 		}
 		
 		$this->addExtendToFile($addonName, $extend, $extendWith);
-		$this->addExtendToDb($addonName, $extend, $extendWith);
 		
 		if ( ! XfCli_ClassGenerator::classExists($extendWith))
 		{
@@ -66,56 +65,11 @@ class CLI_Xf_Extend extends CLI
 			XfCli_ClassGenerator::create($extendWith, $class);
 		}
 		
-		echo 'Class Extended';
-	}
-	
-	protected function addExtendToDb($addonName, $extend, $extendWith)
-	{
-		CLI::printInfo("Adding event listener to database.. ", false);
-		
+		// Add the listener in a seperate process as this one has the old version of the class loaded
 		$classType = $this->getClassType($extend);
+		echo shell_exec('xf --skip-files --not-final listener add load_class_' . $classType . ' ' . $addonName);
 		
-		$eventModel = new XenForo_Model_CodeEvent;
-		$events 	= $eventModel->getEventListenersByAddOn($addonName);
-		
-		if ($events)
-		{
-			foreach ($events AS $event)
-			{
-				if (
-					$event['event_id'] 			== 'load_class_' . $classType AND
-					$event['callback_class'] 	== $addonName . '_Listen' AND
-					$event['callback_method'] 	== 'load_class_' . $classType
-				)
-				{
-					CLI::printInfo("skipped (already exists)");
-					return;
-				}
-			}
-		}
-		
-		$dwInput = array(
-			'event_id'			=> 'load_class_' . $classType,
-			'execute_order' 	=> 10,
-			'description' 		=> '',
-			'callback_class' 	=> $addonName . '_Listen',
-			'callback_method' 	=> 'load_class_' . $classType,
-			'active' 			=> 1,
-			'addon_id' 			=> $addonName
-		);
-		
-		try
-		{
-			$dw = XenForo_DataWriter::create('XenForo_DataWriter_CodeEventListener');
-			$dw->bulkSet($dwInput);
-			$dw->save();
-			
-			CLI::printInfo("ok");
-		}
-		catch (Exception $e)
-		{
-			$this->bail($e->getMessage());
-		}
+		echo 'Class Extended';
 	}
 	
 	protected function addExtendToFile($addonName, $extend, $extendWith)

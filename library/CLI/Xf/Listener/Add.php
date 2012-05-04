@@ -23,10 +23,17 @@ class CLI_Xf_Listener_Add extends CLI
 			$this->bail('Could not detect addon name');
 		}
 		
-		$this->addListenerToFile($addonName, $event);
+		if ( ! $this->hasFlag('skip-files'))
+		{
+			$this->addListenerToFile($addonName, $event);
+		}
+		
 		$this->addListenerToDb($addonName, $event);
 		
-		echo 'Listener Added';
+		if ( ! $this->hasFlag('not-final'))
+		{
+			echo 'Listener Added';
+		}
 		
 	}
 	
@@ -47,6 +54,7 @@ class CLI_Xf_Listener_Add extends CLI
 					$event['callback_method'] 	== $listener
 				)
 				{
+					CLI::printInfo("skipped (already exists)");
 					return;
 				}
 			}
@@ -86,6 +94,40 @@ class CLI_Xf_Listener_Add extends CLI
 		
 		XfCli_ClassGenerator::create($className);
 		XfCli_ClassGenerator::appendMethod($className, $methodName, $body, $params, array('static'));
+	}
+	
+	public function getEventParams($event)
+	{
+		
+		$params = array();
+		
+		switch ($event)
+		{
+			case 'load_class_controller':
+			case 'load_class_bb_code':
+			case 'load_class_datawriter':
+			case 'load_class_importer':
+			case 'load_class_model':
+			case 'load_class_route_prefix':
+			case 'load_class_search_data':
+			case 'load_class_view':
+			case 'load_class_mail':
+				
+				$param = new Zend_CodeGenerator_Php_Parameter;
+				$param->setName('class');
+				$params[] = $param;
+				
+				$param = new Zend_CodeGenerator_Php_Parameter;
+				$param->setName('extend');
+				$param->setType('array');
+				$param->setPassedByReference(true);
+				$params[] = $param;
+				
+				break;
+		}
+		
+		return $params;
+		
 	}
 	
 }
