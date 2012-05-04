@@ -24,7 +24,6 @@ class CLI_Xf_Extend extends CLI
 	
 	public function run()
 	{
-		
 		if ( ! $extend = $this->getArgumentAt(0))
 		{
 			$this->showHelp(true);
