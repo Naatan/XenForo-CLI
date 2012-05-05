@@ -53,7 +53,7 @@ class XfCli_Application
 		}
 		else
 		{
-			self::bail('Could not detect XenForo install dir');
+			CLI::getInstance()->bail('Could not detect XenForo install dir');
 		}
 	}
 	
