@@ -1,16 +1,30 @@
 <?php
 
+/**
+ * XenForo CLI - Add Listener command (ie. xf listener add)
+ */
 class CLI_Xf_Listener_Add extends CLI
 {
 	
+	/**
+	 * @var string	Help text
+	 */
 	protected $_help = '
 		Example: xf listener add load_class_controller MyAddonName
 	';
 	
+	/**
+	 * Default run method
+	 * 
+	 * @return	void							
+	 */
 	public function run()
 	{
+		
+		// Requires at least 1 argument (ie. event to create listener for)
 		$this->assertNumArguments(1);
 		
+		// detect addon name
 		$addonName 	= $this->getArgumentAt(1);
 		$addonName  = XfCli_Application::getAddonName($addonName);
 		
@@ -19,11 +33,13 @@ class CLI_Xf_Listener_Add extends CLI
 			$this->bail('Could not detect addon name');
 		}
 		
+		// Append listener to file (unless we want to skip it)
 		if ( ! $this->hasFlag('skip-files'))
 		{
 			$this->addListenerToFile($addonName, $event);
 		}
 		
+		// Add listener to database
 		$this->addListenerToDb($addonName, $event);
 		
 		if ( ! $this->hasFlag('not-final'))
@@ -33,10 +49,19 @@ class CLI_Xf_Listener_Add extends CLI
 		
 	}
 	
+	/**
+	 * Add listener to database
+	 * 
+	 * @param	string			$addonName		
+	 * @param	string			$listener
+	 * 
+	 * @return	void							
+	 */
 	protected function addListenerToDb($addonName, $listener)
 	{
 		$this->printInfo("Adding event listener to database.. ", false);
 		
+		// Validate if listener already exists
 		$eventModel = new XenForo_Model_CodeEvent;
 		$events 	= $eventModel->getEventListenersByAddOn($addonName);
 		
@@ -56,6 +81,7 @@ class CLI_Xf_Listener_Add extends CLI
 			}
 		}
 		
+		// Prepare data for insert
 		$dwInput = array(
 			'event_id'			=> $listener,
 			'execute_order' 	=> 10,
@@ -66,6 +92,7 @@ class CLI_Xf_Listener_Add extends CLI
 			'addon_id' 			=> $addonName
 		);
 		
+		// Perform the actual insert
 		try
 		{
 			$dw = XenForo_DataWriter::create('XenForo_DataWriter_CodeEventListener');
@@ -80,6 +107,14 @@ class CLI_Xf_Listener_Add extends CLI
 		}
 	}
 	
+	/**
+	 * Add listener to file
+	 * 
+	 * @param	string			$addonName		
+	 * @param	string			$listener
+	 * 
+	 * @return	void							
+	 */
 	protected function addListenerToFile($addonName, $listener)
 	{
 		$className 		= $addonName . '_Listen';
@@ -92,6 +127,13 @@ class CLI_Xf_Listener_Add extends CLI
 		XfCli_ClassGenerator::appendMethod($className, $methodName, $body, $params, array('static'));
 	}
 	
+	/**
+	 * Get method params for specified event
+	 * 
+	 * @param	string			$event
+	 * 
+	 * @return	array
+	 */
 	public function getEventParams($event)
 	{
 		
@@ -121,6 +163,8 @@ class CLI_Xf_Listener_Add extends CLI
 				
 				break;
 		}
+		
+		// todo: fire code event to allow third party event params
 		
 		return $params;
 		

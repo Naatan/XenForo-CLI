@@ -1,8 +1,18 @@
 <?php
 
+/**
+ * XfCli Class Autoloader
+ */
 class XfCli_Autoloader
 {
 	
+	/**
+	 * Run the autoloader (require class file)
+	 * 
+	 * @param	string			$className
+	 * 
+	 * @return	void							
+	 */
 	public static function run($className)
 	{
 		$file = dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . self::getFileName($className);
@@ -16,6 +26,13 @@ class XfCli_Autoloader
 		require_once $file;	
 	}
 	
+	/**
+	 * Get file name based on class name
+	 * 
+	 * @param	string			$className
+	 * 
+	 * @return	string							
+	 */
 	public static function getFileName($className)
 	{
 		$fileParts = explode('\\', ltrim($className, '\\'));
