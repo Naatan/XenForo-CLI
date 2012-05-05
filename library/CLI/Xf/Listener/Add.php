@@ -9,11 +9,7 @@ class CLI_Xf_Listener_Add extends CLI
 	
 	public function run()
 	{
-		
-		if ( ! $event = $this->getArgumentAt(0))
-		{
-			$this->showHelp(true);
-		}
+		$this->assertNumArguments(1);
 		
 		$addonName 	= $this->getArgumentAt(1);
 		$addonName  = XfCli_Application::getAddonName($addonName);
