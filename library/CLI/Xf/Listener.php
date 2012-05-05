@@ -9,9 +9,8 @@ class CLI_Xf_Listener extends CLI {
 	 * @var string	Help text
 	 */
 	protected $_help = '
-		Possible commands:
-			add
-			delete
-	';
+Possible commands:
+	add
+	delete';
 	
 }
