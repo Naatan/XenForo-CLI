@@ -18,29 +18,31 @@ class CLI_Xf_Listener_Add extends CLI
 	 * 
 	 * @return	void							
 	 */
-	public function run()
+	public function run($event)
 	{
+		$addon = XfCli_Application::getConfig()->addon;
 		
-		// Requires at least 1 argument (ie. event to create listener for)
-		$this->assertNumArguments(1);
-		
-		// detect addon name
-		$addonName 	= $this->getArgumentAt(1);
-		$addonName  = XfCli_Application::getAddonName($addonName);
-		
-		if (empty($addonName))
+		if ( ! $addon->id)
 		{
-			$this->bail('Could not detect addon name');
+			$this->showHelp();
+			$this->bail('No addon selected');
 		}
 		
 		// Append listener to file (unless we want to skip it)
 		if ( ! $this->hasFlag('skip-files'))
 		{
-			$this->addListenerToFile($addonName, $event);
+			$this->addToFile($addon, $event);
 		}
 		
 		// Add listener to database
-		$this->addListenerToDb($addonName, $event);
+		if ($this->hasFlag('one-process'))
+		{
+			$this->addToDb($addon, $event);
+		}
+		else
+		{
+			echo shell_exec('xf --skip-files --not-final --one-process listener add ' . $event);
+		}
 		
 		if ( ! $this->hasFlag('not-final'))
 		{
@@ -52,18 +54,18 @@ class CLI_Xf_Listener_Add extends CLI
 	/**
 	 * Add listener to database
 	 * 
-	 * @param	string			$addonName		
+	 * @param	object			$addon
 	 * @param	string			$listener
 	 * 
 	 * @return	void							
 	 */
-	protected function addListenerToDb($addonName, $listener)
+	protected function addToDb($addon, $listener)
 	{
 		$this->printInfo("Adding event listener to database.. ", false);
 		
 		// Validate if listener already exists
 		$eventModel = new XenForo_Model_CodeEvent;
-		$events 	= $eventModel->getEventListenersByAddOn($addonName);
+		$events 	= $eventModel->getEventListenersByAddOn($addon->id);
 		
 		if ($events)
 		{
@@ -71,7 +73,7 @@ class CLI_Xf_Listener_Add extends CLI
 			{
 				if (
 					$event['event_id'] 			== $listener AND
-					$event['callback_class'] 	== $addonName . '_Listen' AND
+					$event['callback_class'] 	== $addon->namespace . '_Listen' AND
 					$event['callback_method'] 	== $listener
 				)
 				{
@@ -86,10 +88,10 @@ class CLI_Xf_Listener_Add extends CLI
 			'event_id'			=> $listener,
 			'execute_order' 	=> 10,
 			'description' 		=> '',
-			'callback_class' 	=> $addonName . '_Listen',
+			'callback_class' 	=> $addon->namespace . '_Listen',
 			'callback_method' 	=> $listener,
 			'active' 			=> 1,
-			'addon_id' 			=> $addonName
+			'addon_id' 			=> $addon->id
 		);
 		
 		// Perform the actual insert
@@ -110,17 +112,17 @@ class CLI_Xf_Listener_Add extends CLI
 	/**
 	 * Add listener to file
 	 * 
-	 * @param	string			$addonName		
+	 * @param	object			$addon
 	 * @param	string			$listener
 	 * 
 	 * @return	void							
 	 */
-	protected function addListenerToFile($addonName, $listener)
+	protected function addToFile($addon, $listener)
 	{
-		$className 		= $addonName . '_Listen';
+		$className 		= $addon->namespace . '_Listen';
 		$methodName 	= $listener;
 		
-		$params = array();
+		$params = $this->getEventParams($listener);
 		$body = '';
 		
 		XfCli_ClassGenerator::create($className);
@@ -141,6 +143,126 @@ class CLI_Xf_Listener_Add extends CLI
 		
 		switch ($event)
 		{
+			
+			/**************************************************************************************/
+			
+			case 'container_admin_params':
+			case 'container_public_params':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('params', 		'array', 							true),
+					array('dependencies', 	'XenForo_Dependencies_Abstract',	true)
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'container_pre_dispatch':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('controller',	'XenForo_Controller'),
+					array('action')
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'criteria_page':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('rule'),
+					array('data', 			'array'),
+					array('params', 		'array'),
+					array('containerData', 	'array'),
+					array('returnValue', 	null, 		true),
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'criteria_user':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('rule'),
+					array('data', 			'array'),
+					array('user', 			'array'),
+					array('returnValue', 	null, 		true),
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'file_health_check':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('controller',		'XenForo_ControllerAdmin_Abstract'),
+					array('hashes', 		'array', 		true)
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'front_controller_post_view':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('fc',			'XenForo_FrontController'),
+					array('output', 	null, 		true)
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'front_controller_pre_dispatch':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('fc',				'XenForo_FrontController'),
+					array('routeMatch', 	'XenForo_RouteMatch', 		true)
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'front_controller_pre_route':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('fc',		'XenForo_FrontController')
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'front_controller_pre_view':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('fc',						'XenForo_FrontController'),
+					array('controllerResponse', 	'XenForo_ControllerResponse_Abstract', 	true),
+					array('viewRenderer', 			'XenForo_ViewRenderer_Abstract', 		true),
+					array('containerParams', 		'array',								true)
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'init_dependencies':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('dependencies',	'XenForo_Dependencies_Abstract'),
+					array('data', 			'array')
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
 			case 'load_class_controller':
 			case 'load_class_bb_code':
 			case 'load_class_datawriter':
@@ -151,17 +273,95 @@ class CLI_Xf_Listener_Add extends CLI
 			case 'load_class_view':
 			case 'load_class_mail':
 				
-				$param = new Zend_CodeGenerator_Php_Parameter;
-				$param->setName('class');
-				$params[] = $param;
-				
-				$param = new Zend_CodeGenerator_Php_Parameter;
-				$param->setName('extend');
-				$param->setType('array');
-				$param->setPassedByReference(true);
-				$params[] = $param;
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('class'),
+					array('extend', 	'array', 	true),
+				));
 				
 				break;
+			
+			/**************************************************************************************/
+			
+			case 'navigation_tabs':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('extraTabs',		'array', 	true),
+					array('selectedTabId')
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'option_captcha_render':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('extraChoices',		'array'),
+					array('view', 				'XenForo_View'),
+					array('preparedOption',		'array')
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'search_source_create':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('class', 	null, 	true)
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'template_create':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('templateName'),
+					array('params', 		'array', 		true),
+					array('template', 		'XenForo_Template_Abstract')
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'template_hook':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('hookName'),
+					array('contents', 		null, 		true),
+					array('hookParams', 	'array'),
+					array('template', 		'XenForo_Template_Abstract')
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'template_post_render':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('templateName'),
+					array('content', 		null, 		true),
+					array('containerData', 	'array', 	true),
+					array('template', 		'XenForo_Template_Abstract')
+				));
+				
+				break;
+			
+			/**************************************************************************************/
+			
+			case 'visitor_setup':
+				
+				$params += XfCli_ClassGenerator::createParams(array(
+					array('visitor', 	'XenForo_Visitor', 	true)
+				));
+				
+				break;
+			
+			/**************************************************************************************/
 		}
 		
 		// todo: fire code event to allow third party event params

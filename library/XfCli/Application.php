@@ -17,6 +17,11 @@ class XfCli_Application
 	public static $_baseDir 	= null;
 	
 	/**
+	 * @var array	Config (if any)
+	 */
+	protected static $_config 	= null;
+	
+	/**
 	 * Initialize XfCli
 	 * 
 	 * @return	void							
@@ -47,6 +52,8 @@ class XfCli_Application
 	protected static function setIncludePaths()
 	{
 		set_include_path(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . PATH_SEPARATOR . '.' . PATH_SEPARATOR . get_include_path());
+		set_exception_handler(array('XfCli_ExceptionHandler', 'handleException'));
+		set_error_handler(array('XfCli_ExceptionHandler', 'handleError'));
 	}
 	
 	/**
@@ -71,25 +78,26 @@ class XfCli_Application
 	 */
 	protected static function detectXenForo()
 	{
-		$baseDir = getcwd();
+		$ds 		= DIRECTORY_SEPARATOR;
+		$baseDir 	= getcwd() . $ds;
 		
 		// Are we in the basedir already
-		if (file_exists($baseDir . '/library/XenForo/Application.php'))
+		if (file_exists($baseDir . 'library' . $ds . 'XenForo' . $ds . 'Application.php'))
 		{
 			self::$_baseDir = $baseDir;
 		}
 		
 		// Are we in the library folder
-		else if (file_exists($baseDir . '/../library/XenForo/Application.php'))
+		else if (file_exists($baseDir . '..' . $ds . 'library' . $ds . 'XenForo' . $ds . 'Application.php'))
 		{
-			self::$_baseDir = $baseDir . '/../';
+			self::$_baseDir = $baseDir . '..' . $ds;
 		}
 		
 		// Are we in an addon folder
-		else if (file_exists($baseDir . '/../../library/XenForo/Application.php'))
+		else if (file_exists($baseDir . '..' . $ds . '..' . $ds . 'library' . $ds . 'XenForo' . $ds . 'Application.php'))
 		{
 			self::$_inAddonDir 	= true;
-			self::$_baseDir 	= $baseDir . '/../../';
+			self::$_baseDir 	= $baseDir . '..' . $ds . '..' . $ds;
 		}
 		
 		// Can't detect XF install folder
@@ -100,30 +108,106 @@ class XfCli_Application
 	}
 	
 	/**
-	 * Detect addon name from class name
+	 * Get config from filesystem
 	 * 
-	 * @param	string|null			$className
-	 * 
-	 * @return	string							
+	 * @return	Object
 	 */
-	public static function getAddonName($className = null)
+	public static function getConfig()
 	{
-		if ( ! empty($className))
+		if ( ! empty(self::$_config))
 		{
-			if (preg_match('/^[a-z]*$/i', $className))
-			{
-				return $className;
-			}
-			
-			return substr($className, 0, strpos($className, '_'));
-		}
-		else if (self::$_inAddonDir)
-		{
-			$baseDir = getcwd();
-			return basename($baseDir);
+			var_dump(self::$_config);
+			return self::$_config;
 		}
 		
-		return false;
+		$config = self::loadConfigJson(dirname(__FILE__) . '/../../.xfcli-config');
+		
+		// TODO: ability to overwrite this with --addon-config=path option. Useful for one off changes to something
+		$config = XfCli_Helpers::objectMerge($config, self::loadConfigJson(self::xfBaseDir() . '/.xfcli-config'));
+		
+		if ( ! empty($config->addon_config))
+		{
+			$config = XfCli_Helpers::objectMerge($config, self::loadConfigJson($config->addon_config));
+		}
+		
+		return $config;
+	}
+	
+	/**
+	 * Loads the JSON config from a file into an array which it returns
+	 * 
+	 * @param  string $filepath
+	 * 
+	 * @return array           
+	 */
+	protected static function loadConfigJson($filepath)
+	{
+		if ( ! file_exists($filepath))
+		{
+			return (object) array();
+		}
+		
+		$config = file_get_contents($filepath);
+		$config = json_decode($config, true);
+		
+		if ( ! $config)
+		{
+			return (object) array();
+		}
+		
+		return $config;
+	}
+	
+	/**
+	 * Write config to file
+	 * 
+	 * @param	object			$config			
+	 * @param	null|string		$file
+	 * 
+	 * @return	object							
+	 */
+	public static function writeConfig($config, $file = null)
+	{
+		if ( ! is_array($config) AND ! is_object($config))
+		{
+			return false;
+		}
+		
+		if (empty($file))
+		{
+			$file = self::xfBaseDir() . DIRECTORY_SEPARATOR .'.xfcli-config';
+		}
+		
+		$existingConfig = self::loadConfigJson($file);
+		$config 		= XfCli_Helpers::objectMerge($existingConfig, $config);
+		
+		if ( ! file_put_contents($file, XfCli_Helpers::jsonEncode($config)))
+		{
+			return false;
+		}
+		
+		return $config;
+	}
+	
+	/**
+	 * Write addon config to file
+	 * 
+	 * @param	object			$config
+	 * 
+	 * @return	object							
+	 */
+	public static function writeAddonConfig($config)
+	{
+		$folder = self::getConfig()->addon->folder;
+		
+		if (empty($folder))
+		{
+			return false;
+		}
+		
+		$file = $folder . DIRECTORY_SEPARATOR . '.xfcli-config';
+		
+		return self::writeConfig($config, $file);
 	}
 	
 }

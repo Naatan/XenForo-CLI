@@ -49,12 +49,7 @@ class CLI_Xf extends CLI
 	 */
 	protected function loadConfig()
 	{
-		$config = $this->loadConfigJson(dirname(__FILE__) . '/.xfcli-config');
-		// TODO: ability to overwrite this with --addon-config=path option. Useful for one off changes to something
-		if ( ! empty($config['current-addon-config']))
-		{
-			$config = array_merge($config, $this->loadConfigJson($config['current-addon-config']));
-		}
+		$config = XenForo_Application::getConfig();
 
 		// We set any flags and options from the config, if already set it has priority so skip
 		foreach ($config AS $option => $value)
@@ -89,8 +84,11 @@ class CLI_Xf extends CLI
 	{
 		$config = file_get_contents($filepath);
 		$config = json_decode($config, true);
+		
 		if ($config === null)
-			die('TODO: Parse error, throw exception');
+		{
+			return array();
+		}
 
 		return $config;
 	}

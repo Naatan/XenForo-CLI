@@ -267,4 +267,50 @@ class XfCli_ClassGenerator
 		
 	}
 	
+	/**
+	 * Create a CodeGenerator parameter
+	 * 
+	 * @param	string				$name			
+	 * @param	null|string			$type			
+	 * @param	null|bool			$reference
+	 * 
+	 * @return	Zend_CodeGenerator_Php_Parameter
+	 */
+	public static function createParam($name, $type = null, $reference = null)
+	{
+		$param = new Zend_CodeGenerator_Php_Parameter;
+		$param->setName($name);
+		
+		if ( ! empty($type))
+		{
+			$param->setType($type);
+		}
+		
+		if ($reference === true)
+		{
+			$param->setPassedByReference(true);
+		}
+		
+		return $param;
+	}
+	
+	/**
+	 * Create multiple CodeGenerator params
+	 * 
+	 * @param	array			$data
+	 * 
+	 * @return	array
+	 */
+	public static function createParams(array $data)
+	{
+		$params = array();
+		
+		foreach ($data AS $args)
+		{
+			$params[] = call_user_func_array(array('XfCli_ClassGenerator', 'createParam'), $args);
+		}
+		
+		return $params;
+	}
+	
 }

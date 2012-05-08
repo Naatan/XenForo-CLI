@@ -1,0 +1,12 @@
+{
+	"addon_config": false, 
+	"flags": ["v"],
+	
+	"addon":
+	{
+		"id":			false,
+		"name":			false,
+		"namespace":	false,
+		"folder":		false
+	}
+}
