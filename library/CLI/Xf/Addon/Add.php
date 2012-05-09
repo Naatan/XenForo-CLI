@@ -18,7 +18,7 @@ class CLI_Xf_Addon_Add extends CLI
 				full: this adds all the folders you could ever need. Handlers, Helpers, BbCode etc..
 			Note: normal and full will 
 
-		--path (not yet implemented)
+		--path
 			By default the add-on will be made in the library folder. You can overwrite this with --path
 			
 		--skip-select
@@ -43,8 +43,10 @@ class CLI_Xf_Addon_Add extends CLI
 			'id' 		=> $addonId,
 			'name'		=> $addonName,
 			'namespace' => ucfirst($addonId),
-			'folder'	=> null
+			'path'		=> null
 		);
+		
+		$base = XfCli_Application::xfBaseDir();
 		
 		// Parse addon ID
 		if (empty($addon->id))
@@ -58,12 +60,12 @@ class CLI_Xf_Addon_Add extends CLI
 		$this->createStructure($addon);
 		
 		// Write addon config file
-		XfCli_Application::writeConfig(array("addon" => $addon), $addon->folder . DIRECTORY_SEPARATOR . '.xfcli-config');
+		XfCli_Application::writeConfig(array("addon" => $addon), $base . $addon->path . DIRECTORY_SEPARATOR . '.xfcli-config');
 		
 		// Select addon
 		if ( ! $this->hasFlag('skip-select'))
 		{
-			$this->getParent()->selectAddon($addon->id);
+			$this->getParent()->selectAddon($addon->path);
 		}
 		
 		echo 'Addon "' . $addon->name . '" created';
@@ -111,13 +113,29 @@ class CLI_Xf_Addon_Add extends CLI
 	{
 		$this->printInfo('creating folder structure.. ', false);
 		
-		$addon->folder = XfCli_Application::xfBaseDir() . 'library' . DIRECTORY_SEPARATOR . $addon->namespace;
+		$base = XfCli_Application::xfBaseDir();
 		
-		if( ! is_dir($addon->folder))
+		if ($this->hasOption('path'))
 		{
-			if ( ! mkdir($addon->folder, 0755, true))
+			$addon->path = $this->getOption('path');
+		}
+		else
+		{
+			$addon->path = 'library' . DIRECTORY_SEPARATOR . $addon->namespace;
+		}
+		
+		$addon->path = realpath($base . $addon->path);
+		
+		if (strpos($addon->path, realpath($base)) === 0)
+		{
+			$addon->path = substr($addon->path, strlen(realpath($base)) + 1);
+		}
+		
+		if( ! is_dir($base . $addon->path))
+		{
+			if ( ! mkdir($base . $addon->path, 0755, true))
 			{
-				$this->bail('Could not locate or create addon directory: ' . $addon->namespace);
+				$this->bail('Could not locate or create addon directory: ' . $addon->path);
 			}
 			
 			$this->printInfo('ok');
@@ -126,6 +144,8 @@ class CLI_Xf_Addon_Add extends CLI
 		{
 			$this->printInfo('skipped (already exists)');
 		}
+		
+		$addon->path .= DIRECTORY_SEPARATOR;
 	}
 	
 }

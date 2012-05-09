@@ -123,11 +123,11 @@ class XfCli_Application
 		$config = self::loadConfigJson(dirname(__FILE__) . '/../../.xfcli-config');
 		
 		// TODO: ability to overwrite this with --addon-config=path option. Useful for one off changes to something
-		$config = XfCli_Helpers::objectMerge($config, self::loadConfigJson(self::xfBaseDir() . '/.xfcli-config'));
+		$config = XfCli_Helpers::objectMerge($config, self::loadConfigJson(self::xfBaseDir() . '.xfcli-config'));
 		
 		if ( ! empty($config->addon_config))
 		{
-			$config = XfCli_Helpers::objectMerge($config, self::loadConfigJson($config->addon_config));
+			$config = XfCli_Helpers::objectMerge($config, self::loadConfigJson(self::xfBaseDir() . $config->addon_config));
 		}
 		
 		return $config;
@@ -140,7 +140,7 @@ class XfCli_Application
 	 * 
 	 * @return array           
 	 */
-	protected static function loadConfigJson($filepath)
+	public static function loadConfigJson($filepath)
 	{
 		if ( ! file_exists($filepath))
 		{
@@ -148,7 +148,7 @@ class XfCli_Application
 		}
 		
 		$config = file_get_contents($filepath);
-		$config = json_decode($config, true);
+		$config = json_decode($config);
 		
 		if ( ! $config)
 		{
