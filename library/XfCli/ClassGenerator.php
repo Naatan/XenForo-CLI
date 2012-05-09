@@ -104,7 +104,7 @@ class XfCli_ClassGenerator
 			return $fileName;
 		}
 		
-		return XfCli_Application::xfBaseDir() . DIRECTORY_SEPARATOR .
+		return XfCli_Application::xfBaseDir() .
 				'library' . DIRECTORY_SEPARATOR . $fileName;
 	}
 	
@@ -217,8 +217,9 @@ class XfCli_ClassGenerator
 		}
 		
 		// Only create class if the file is available or we have class data
-		$filePath = self::getClassPath($className);
-		if ( ! file_exists($filePath) OR $class != null)
+		$filePath 		= self::getClassPath($className);
+		$fileContents 	= file_get_contents($filePath);
+		if ( ! file_exists($filePath) OR $class != null OR empty($fileContents))
 		{
 			
 			// Print update or create message
