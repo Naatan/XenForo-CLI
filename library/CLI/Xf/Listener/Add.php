@@ -10,7 +10,7 @@ class CLI_Xf_Listener_Add extends CLI
 	 * @var string	Help text
 	 */
 	protected $_help = '
-		Example: xf listener add load_class_controller MyAddonName
+		Example: xf listener add load_class_controller
 	';
 	
 	/**

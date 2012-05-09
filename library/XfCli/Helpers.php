@@ -180,6 +180,18 @@ class XfCli_Helpers
 	
 		return $result;
 	
-	}	
+	}
+	
+	public static function camelcaseString($string, $lowerFirst = true)
+	{
+		$string = preg_replace('/[^a-z0-9]/i', '', ucwords(strtolower($string)));
+		
+		if ($lowerFirst)
+		{
+			$string = lcfirst($string);
+		}
+		
+		return $string;
+	}
 	
 }

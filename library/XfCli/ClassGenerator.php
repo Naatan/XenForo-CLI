@@ -218,8 +218,8 @@ class XfCli_ClassGenerator
 		
 		// Only create class if the file is available or we have class data
 		$filePath 		= self::getClassPath($className);
-		$fileContents 	= file_get_contents($filePath);
-		if ( ! file_exists($filePath) OR $class != null OR empty($fileContents))
+		$fileContents 	= file_exists($filePath) ? file_get_contents($filePath) : false;
+		if (empty($fileContents) OR $class != null)
 		{
 			
 			// Print update or create message

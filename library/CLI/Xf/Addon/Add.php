@@ -115,7 +115,7 @@ class CLI_Xf_Addon_Add extends CLI
 		
 		$base = XfCli_Application::xfBaseDir();
 		
-		if ($this->hasOption('path'))
+		if ($this->getOption('path'))
 		{
 			$addon->path = $this->getOption('path');
 		}
