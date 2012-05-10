@@ -67,9 +67,9 @@ class CLI_Xf_Addon extends CLI
 		$addonModel = XenForo_Model::create('XenForo_Model_AddOn');
 		$addon 		= $addonModel->getAddOnById($addonId);
 		
-		if ($addon AND (isset($configFile) OR self::configFile($configFile)))
+		if ($addon AND (isset($configFile) OR $configFile = self::configFile($addonId)))
 		{
-			$configFile = isset($configFile) ? realpath($configFile) : self::configFile($configFile);
+			$configFile = realPath($configFile);
 			
 			if (strpos($configFile, realpath($base)) === 0)
 			{
@@ -116,7 +116,7 @@ class CLI_Xf_Addon extends CLI
 	 */
 	public function configFile($addonId)
 	{
-		$file = XfCli_Application::xfBaseDir() . 'library' . DIRECTORY_SEPARATOR . ucfirst($addonId) . DIRECTORY_SEPARATOR . '.xfcli-config';
+		$file = XfCli_Application::xfBaseDir() . 'library' . DIRECTORY_SEPARATOR . ucfirst(strtolower($addonId)) . DIRECTORY_SEPARATOR . '.xfcli-config';
 		return file_exists($file) ? $file : false;
 	}
 	

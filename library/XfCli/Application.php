@@ -30,8 +30,6 @@ class XfCli_Application
 	{
 		self::registerAutoloader();
 		self::setIncludePaths();
-		
-		new CLI_Xf();
 	}
 	
 	/**
@@ -52,8 +50,12 @@ class XfCli_Application
 	protected static function setIncludePaths()
 	{
 		set_include_path(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . PATH_SEPARATOR . '.' . PATH_SEPARATOR . get_include_path());
+		
 		set_exception_handler(array('XfCli_ExceptionHandler', 'handleException'));
 		set_error_handler(array('XfCli_ExceptionHandler', 'handleError'));
+		
+		CLI::$_useExceptions 	= true;
+		CLI::$_exceptionClass 	= 'XfCli_Exception';
 	}
 	
 	/**
@@ -103,7 +105,8 @@ class XfCli_Application
 		// Can't detect XF install folder
 		else
 		{
-			CLI::getInstance()->bail('Could not detect XenForo install dir');
+			echo 'Could not detect XenForo install dir';
+			die();
 		}
 	}
 	

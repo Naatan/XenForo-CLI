@@ -37,7 +37,6 @@ class CLI_Xf_Addon_Add extends CLI
 	 */
 	public function run($addonName, $addonId = null)
 	{
-		
 		// Prepare default data
 		$addon = (object) array(
 			'id' 		=> $addonId,
@@ -124,7 +123,7 @@ class CLI_Xf_Addon_Add extends CLI
 			$addon->path = 'library' . DIRECTORY_SEPARATOR . $addon->namespace;
 		}
 		
-		$addon->path = realpath($base . $addon->path);
+		$addon->path = realpath($base) . DIRECTORY_SEPARATOR . $addon->path;
 		
 		if (strpos($addon->path, realpath($base)) === 0)
 		{

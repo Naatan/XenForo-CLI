@@ -19,3 +19,5 @@ $dependencies->preLoadData();
 unset($xfLibrary);
 
 XfCli_Application::initialize();
+
+new CLI_Xf();
