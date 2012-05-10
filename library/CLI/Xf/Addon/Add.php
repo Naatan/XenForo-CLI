@@ -37,7 +37,9 @@ class CLI_Xf_Addon_Add extends CLI
 	 */
 	public function run($addonName, $addonId = null)
 	{
-		
+		if ($addonId === null)
+			$addonId = $addonName;
+
 		// Prepare default data
 		$addon = (object) array(
 			'id' 		=> $addonId,
@@ -68,7 +70,7 @@ class CLI_Xf_Addon_Add extends CLI
 			$this->getParent()->selectAddon($addon->path);
 		}
 		
-		echo 'Addon "' . $addon->name . '" created';
+		echo 'Addon "' . $addon->name . '" created' . PHP_EOL;
 	}
 	
 	/**

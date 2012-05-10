@@ -57,11 +57,21 @@ class CLI_Xf_Addon extends CLI
 		{
 			$configFile = $addonId;
 		}
+		else
+		{
+			if ( ! $autoCreate && strpos('library/', $addonId) !== 0)
+			{
+				// one last check for the config
+				return $this->getAddon('library/' . $addonId, false);
+			}
+
+			$configFile = null;
+		}
 		
 		if (isset($configFile))
 		{
 			$config 	= XfCli_Application::loadConfigJson($configFile);
-			$addonId 	= $config->addon->id;
+			$addonId 	= isset($config->addon->id) ? $config->addon->id : false;
 		}
 		
 		$addonModel = XenForo_Model::create('XenForo_Model_AddOn');
@@ -87,7 +97,9 @@ class CLI_Xf_Addon extends CLI
 		else
 		{
 			$this->setFlag('skip-select');
-			new CLI_Xf_Addon_Add('CLI_Xf_Addon_Add', null, $this->getFlags(), $this->getOptions(), $this->_callStructure);
+			$callStructure = $this->_callStructure;
+			$callStructure[] = $this;
+			new CLI_Xf_Addon_Add('CLI_Xf_Addon_Add', $this->getArguments(), $this->getFlags(), $this->getOptions(), $callStructure);
 			return $this->getAddon($addonId, false);
 		}
 	}

@@ -41,7 +41,7 @@ class CLI_Xf_Listener_Add extends CLI
 		}
 		else
 		{
-			echo shell_exec('xf --skip-files --not-final --one-process listener add ' . $event);
+			echo shell_exec('./xf --skip-files --not-final --one-process listener add ' . $event);
 		}
 		
 		if ( ! $this->hasFlag('not-final'))
