@@ -67,7 +67,7 @@ class CLI_Xf_Addon_Add extends CLI
 			$this->getParent()->selectAddon($addon->path);
 		}
 		
-		echo 'Addon "' . $addon->name . '" created';
+		echo 'Addon "' . $addon->name . '" created' . PHP_EOL;
 	}
 	
 	/**

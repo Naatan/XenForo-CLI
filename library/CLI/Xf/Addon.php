@@ -39,23 +39,25 @@ class CLI_Xf_Addon extends CLI
 	 */
 	public function getAddon($addonId, $autoCreate = true)
 	{
-		$base = XfCli_Application::xfBaseDir();
+		$base 	= XfCli_Application::xfBaseDir();
+		$ds  	= DIRECTORY_SEPARATOR;
 		
-		if (is_file($base . $addonId . DIRECTORY_SEPARATOR . '.xfcli-config'))
+		$dirs 	= array(
+			$base . $addonId,
+			$base . 'library' . DIRECTORY_SEPARATOR . $addonId,
+			$addonId
+		);
+		
+		foreach ($dirs AS $dir)
 		{
-			$configFile = $base . $addonId . DIRECTORY_SEPARATOR . '.xfcli-config';
-		}
-		else if (is_file($base . $addonId))
-		{
-			$configFile = $base . $addonId;
-		}
-		else if (is_file($addonId . DIRECTORY_SEPARATOR . '.xfcli-config'))
-		{
-			$configFile = $addonId . DIRECTORY_SEPARATOR . '.xfcli-config';
-		}
-		else if (is_file($addonId))
-		{
-			$configFile = $addonId;
+			if (is_file($dir. DIRECTORY_SEPARATOR . '.xfcli-config'))
+			{
+				$configFile = $dir. DIRECTORY_SEPARATOR . '.xfcli-config';
+			}
+			else if (is_file($dir. DIRECTORY_SEPARATOR))
+			{
+				$configFile = $dir. DIRECTORY_SEPARATOR;
+			}
 		}
 		
 		if (isset($configFile))
@@ -87,7 +89,9 @@ class CLI_Xf_Addon extends CLI
 		else
 		{
 			$this->setFlag('skip-select');
-			new CLI_Xf_Addon_Add('CLI_Xf_Addon_Add', null, $this->getFlags(), $this->getOptions(), $this->_callStructure);
+			$callStructure = $this->_callStructure;
+			$callStructure[] = $this;
+			new CLI_Xf_Addon_Add('CLI_Xf_Addon_Add', $this->getArguments(), $this->getFlags(), $this->getOptions(), $callStructure);
 			return $this->getAddon($addonId, false);
 		}
 	}
