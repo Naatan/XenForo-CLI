@@ -10,16 +10,18 @@ class CLI_Xf_Template_Add extends CLI
 	 * @var string	Help text
 	 */
 	protected $_help = '
-		Example: xf template add <name> <boolean>
-			<boolean> - whether this is an admin template, any value that doesn\t match false will work to enable
+		Example: xf template add <name> [--admin]
+			--admin - whether this is an admin template, any value that doesn\t match false will work to enable
 	';
 	
 	/**
 	 * Default run method
+	 *
+	 *@param 	string 		$name
 	 * 
 	 * @return	void							
 	 */
-	public function run($name, $admin = false)
+	public function run($name)
 	{
 		$addon = XfCli_Application::getConfig()->addon;
 		
@@ -29,7 +31,7 @@ class CLI_Xf_Template_Add extends CLI
 			$this->bail('No addon selected');
 		}
 		
-		$this->addToDb($addon, $name, $admin);
+		$this->addToDb($addon, $name, $this->hasFlag('admin'));
 		
 		echo 'Template Added';
 	}

@@ -53,6 +53,30 @@ class Commands extends PHPUnit_Framework_TestCase
 		self::runCommand(array('template', 'add', strtolower(self::getAddon())));
 	}
 	
+	/**
+	 * @runInSeparateProcess enabled
+	 */
+	public function test__PhraseAdd()
+	{
+		self::runCommand(array('phrase', 'add', strtolower(self::getAddon()), strtolower(self::getAddon()) ));
+	}
+	
+	/**
+	 * @runInSeparateProcess enabled
+	 */
+	public function test__PhraseFind()
+	{
+		self::runCommand(array('phrase', 'find', strtolower(self::getAddon())));
+	}
+	
+	/**
+	 * @runInSeparateProcess enabled
+	 */
+	public function test__PhraseGet()
+	{
+		self::runCommand(array('phrase', 'get', strtolower(self::getAddon())));
+	}
+	
 	public static function getAddon($new = false)
 	{
 		$file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'xfcli-addonId';
