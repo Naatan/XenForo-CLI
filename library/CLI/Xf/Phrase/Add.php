@@ -33,7 +33,7 @@ class CLI_Xf_Phrase_Add extends CLI
 		
 		$this->addToDb($addon, $name, $value);
 		
-		echo 'Phrase Added';
+		$this->printMessage('Phrase Added');
 	}
 	
 	/**

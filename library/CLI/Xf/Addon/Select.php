@@ -27,7 +27,7 @@ class CLI_Xf_Addon_Select extends CLI
 	public function run($addonId)
 	{
 		$this->getParent()->selectAddon($addonId);
-		echo 'Addon "' . $addonId . '" selected' . PHP_EOL;
+		$this->printMessage("Addon selected");
 	}
 
 }

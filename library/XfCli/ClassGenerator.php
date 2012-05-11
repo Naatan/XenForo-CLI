@@ -123,17 +123,9 @@ class XfCli_ClassGenerator
 	public static function appendMethod($className, $methodName, $append, array $params,
 										$flags = null, $ignoreRegex = null)
 	{
-		CLI::getInstance()->printInfo(
-			'Appending data to method "' . $methodName . '", in class "' . $className . '".. ', false
-		);
 		
 		// Get class that method belogs to
-		if ( ! $class = self::get($className))
-		{
-			CLI::getInstance()->bail(
-				'Could not append method "'.$methodName.'" to nonexistant class "' . $className . '"'
-			);
-		}
+		$class = self::get($className);
 		
 		// Get existing method (if any)
 		$method = $class->getMethod($methodName);
@@ -154,7 +146,6 @@ class XfCli_ClassGenerator
 			// Check if ignoreregex matches and if so skip append
 			if ($ignoreRegex != null AND preg_match($ignoreRegex, $body))
 			{
-				CLI::getInstance()->printInfo('skipped (already exists)');
 				return false;
 			}
 		}
@@ -192,8 +183,6 @@ class XfCli_ClassGenerator
 		// Append method to class
 		$class->setMethod($method);
 		
-		CLI::getInstance()->printInfo('Ok');
-		
 		// Save class
 		return self::save($class);
 		
@@ -222,16 +211,6 @@ class XfCli_ClassGenerator
 		if (empty($fileContents) OR $class != null)
 		{
 			
-			// Print update or create message
-			if (file_exists($filePath))
-			{
-				CLI::getInstance()->printInfo('Updating class "' . $className . '".. ', false);
-			}
-			else
-			{
-				CLI::getInstance()->printInfo('Creating class "' . $className . '".. ', false);
-			}
-			
 			// Load blank CodeGenerator file
 			$file 	= new Zend_CodeGenerator_Php_File();
 			
@@ -256,13 +235,12 @@ class XfCli_ClassGenerator
 			{
 				CLI::getInstance()->bail("File could not be created: " . $filePath);
 			}
+			
 		}
 		else
 		{
 			CLI::getInstance()->bail("File already exists: " . $filePath);
 		}
-		
-		CLI::getInstance()->printInfo('Ok');
 		
 		return self::get($className);
 		

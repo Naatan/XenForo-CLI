@@ -49,7 +49,7 @@ class CLI_Xf_Phrase_Find extends CLI
 		
 		if ($phrases)
 		{
-			echo 'Results found: ' . PHP_EOL . PHP_EOL;
+			$this->printMessage('Results found: ' . PHP_EOL);
 			
 			foreach ($phrases AS $phrase => $value)
 			{
@@ -60,17 +60,17 @@ class CLI_Xf_Phrase_Find extends CLI
 				
 				$value = str_replace("\n" , '\n', $value);
 				
-				echo ' - ' . $this->colorText($phrase, CLI::BOLD) . ': ' . $value . PHP_EOL;
+				$this->printMessage(' - ' . $this->colorText($phrase, CLI::BOLD) . ': ' . $value);
 			}
 			
 			if (count($phrases) == 20)
 			{
-				echo PHP_EOL . 'There may be more results..';
+				$this->printMessage(PHP_EOL . 'There may be more results..');
 			}
 		}
 		else
 		{
-			echo 'No phrases found ';
+			$this->printMessage('No phrases found ');
 		}
 		
 	}

@@ -33,7 +33,7 @@ class CLI_Xf_Template_Add extends CLI
 		
 		$this->addToDb($addon, $name, $this->hasFlag('admin'));
 		
-		echo 'Template Added';
+		$this->printMessage('Template Added');
 	}
 	
 	/**

@@ -53,12 +53,12 @@ class CLI_Xf_Route_Add extends CLI
 		}
 		else
 		{
-			echo shell_exec('xf --skip-files --not-final --one-process route add ' . $prefix. ' ' . $type);
+			$this->printInfo( shell_exec('xf --skip-files --not-final --one-process route add ' . $prefix. ' ' . $type) );
 		}
 		
 		if ( ! $this->hasFlag('not-final'))
 		{
-			echo 'Route Added';
+			$this->printMessage('Route Added');
 		}
 		
 	}

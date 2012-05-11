@@ -1,15 +1,12 @@
 <?php
 
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Helpers.php';
+
 /**
  * Main XfCli application
  */
 class XfCli_Application
 {
-	
-	/**
-	 * @var bool	Whether or not the command is executed from within an addon folder
-	 */
-	public static $_inAddonDir 	= false;
 	
 	/**
 	 * @var string	XenForo base dir
@@ -83,26 +80,10 @@ class XfCli_Application
 		$ds 		= DIRECTORY_SEPARATOR;
 		$baseDir 	= getcwd() . $ds;
 		
-		// Are we in the basedir already
-		if (file_exists($baseDir . 'library' . $ds . 'XenForo' . $ds . 'Application.php'))
+		if ($baseDir = XfCli_Helpers::locate('Application.php', array('library', 'XenForo', 'library/XenForo')))
 		{
-			self::$_baseDir = $baseDir;
+			self::$_baseDir = realpath(dirname($baseDir) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..') . DIRECTORY_SEPARATOR;
 		}
-		
-		// Are we in the library folder
-		else if (file_exists($baseDir . '..' . $ds . 'library' . $ds . 'XenForo' . $ds . 'Application.php'))
-		{
-			self::$_baseDir = $baseDir . '..' . $ds;
-		}
-		
-		// Are we in an addon folder
-		else if (file_exists($baseDir . '..' . $ds . '..' . $ds . 'library' . $ds . 'XenForo' . $ds . 'Application.php'))
-		{
-			self::$_inAddonDir 	= true;
-			self::$_baseDir 	= $baseDir . '..' . $ds . '..' . $ds;
-		}
-		
-		// Can't detect XF install folder
 		else
 		{
 			echo 'Could not detect XenForo install dir';
@@ -119,18 +100,25 @@ class XfCli_Application
 	{
 		if ( ! empty(self::$_config))
 		{
-			var_dump(self::$_config);
 			return self::$_config;
 		}
 		
-		$config = self::loadConfigJson(dirname(__FILE__) . '/../../.xfcli-config');
+		$ds = DIRECTORY_SEPARATOR;
+		$up = '..' . $ds;
+		
+		$config = self::loadConfigJson(dirname(__FILE__) . $ds.$up.$up.$up. '.xfcli-config');
 		
 		// TODO: ability to overwrite this with --addon-config=path option. Useful for one off changes to something
 		$config = XfCli_Helpers::objectMerge($config, self::loadConfigJson(self::xfBaseDir() . '.xfcli-config'));
 		
 		if ( ! empty($config->addon_config))
 		{
-			$config = XfCli_Helpers::objectMerge($config, self::loadConfigJson(self::xfBaseDir() . $config->addon_config));
+			$file = XfCli_Helpers::locate($config->addon_config, array('library'), self::xfBaseDir());
+			
+			if ($file)
+			{
+				$config = XfCli_Helpers::objectMerge($config, self::loadConfigJson($file));
+			}
 		}
 		
 		return $config;

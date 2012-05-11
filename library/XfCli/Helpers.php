@@ -182,6 +182,14 @@ class XfCli_Helpers
 	
 	}
 	
+	/**
+	 * Convert string to camelcase
+	 * 
+	 * @param	string			$string			
+	 * @param	bool			$lowerFirst
+	 * 
+	 * @return	string							
+	 */
 	public static function camelcaseString($string, $lowerFirst = true)
 	{
 		$string = preg_replace('/[^a-z0-9]/i', '', ucwords(strtolower($string)));
@@ -192,6 +200,78 @@ class XfCli_Helpers
 		}
 		
 		return $string;
+	}
+	
+	/**
+	 * Search for the given file in the cwd and the given folder variations
+	 * 
+	 * @param	string			$file			
+	 * @param	array			$folders		
+	 * @param	string			$strip			
+	 * @param	array			$ignoreFolders
+	 * 
+	 * @return	string|bool
+	 */
+	public static function locate($file, array $folders = array(), $strip = null, array $ignoreFolders = array())
+	{
+		// Variable shortcuts
+		$ds 	= DIRECTORY_SEPARATOR;
+		$cwd 	= getcwd() . $ds;
+		$up 	= '..' . $ds;
+		
+		// Set default variations
+		$variations = array($file, "", $up, $up . $up);
+		
+		// Append given folder variations
+		foreach ($folders AS $folder)
+		{
+			$folder = str_replace('/', $ds, $folder); // Windows compatibility
+			
+			$variations[] = $folder;
+			$variations[] = $up . $folder;
+			$variations[] = $up . $up . $folder;
+		}
+		
+		// Prepend cwd if the file is not an absolute path
+		if (substr($file, 0, 1) != DIRECTORY_SEPARATOR)
+		{
+			$v = $variations;
+			for ($c=count($v)-1;$c>=0; $c--) {
+				array_unshift($variations, $cwd . $v[$c]);
+			}
+		}
+		
+		// Add realpath values for ignored folder
+		foreach ($ignoreFolders AS $ignore)
+		{
+			$ignoreFolders[] = realpath($ignore);
+		}
+		
+		// iterate through variations and check for matches
+		foreach ($variations AS $variation)
+		{
+			// Check if this variation should be ignored
+			if (in_array($variation, $ignoreFolders) OR in_array(realpath($variation), $ignoreFolders))
+			{
+				continue;
+			}
+			
+			// Check if we have a match
+			if (file_exists($variation . $ds . $file))
+			{
+				$result = realpath($variation . $ds . $file);
+				
+				// Check if we need to strip the given prefix
+				if ($strip != null AND strpos($result, $strip) === 0)
+				{
+					$result = substr($result, strlen($strip));
+				}
+				
+				return $result;
+			}
+		}
+		
+		return false;
 	}
 	
 }

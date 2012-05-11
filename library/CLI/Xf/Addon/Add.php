@@ -67,7 +67,7 @@ class CLI_Xf_Addon_Add extends CLI
 			$this->getParent()->selectAddon($addon->path);
 		}
 		
-		echo 'Addon "' . $addon->name . '" created' . PHP_EOL;
+		$this->printMessage("Addon created");
 	}
 	
 	/**
@@ -114,22 +114,35 @@ class CLI_Xf_Addon_Add extends CLI
 		
 		$base = XfCli_Application::xfBaseDir();
 		
+		// Check if path option was given
 		if ($this->getOption('path'))
 		{
-			$addon->path = $this->getOption('path');
+			$path = $this->getOption('path');
+			
+			// Check if path given is absolute or relative, requires that relative paths start alphabetical or with a dot
+			if (preg_match('/[a-z.]/i', substr($path, 0, 1)))
+			{
+				if (substr($path, 0, 7) != 'library')
+				{
+					$path = 'library' . DIRECTORY_SEPARATOR . $path; // prepend library folder
+				}
+			}
+			
+			$addon->path = $path;
 		}
 		else
 		{
-			$addon->path = 'library' . DIRECTORY_SEPARATOR . $addon->namespace;
+			// Otherwise generate the path based on addon id
+			$addon->path = 'library' . DIRECTORY_SEPARATOR . ucfirst(strtolower($addon->id));
 		}
 		
-		$addon->path = realpath($base) . DIRECTORY_SEPARATOR . $addon->path;
-		
-		if (strpos($addon->path, realpath($base)) === 0)
+		// Strip the base path from the addon path
+		if (strpos(realpath($addon->path), realpath($base)) === 0)
 		{
-			$addon->path = substr($addon->path, strlen(realpath($base)) + 1);
+			$addon->path = substr(realpath($addon->path), strlen(realpath($base)) + 1);
 		}
 		
+		// Check if we need to create the directory
 		if( ! is_dir($base . $addon->path))
 		{
 			if ( ! mkdir($base . $addon->path, 0755, true))
@@ -144,7 +157,19 @@ class CLI_Xf_Addon_Add extends CLI
 			$this->printInfo('skipped (already exists)');
 		}
 		
-		$addon->path .= DIRECTORY_SEPARATOR;
+		// Append directory separator at the end of the path
+		if (substr($addon->path, -1) != DIRECTORY_SEPARATOR)
+		{
+			$addon->path .= DIRECTORY_SEPARATOR;
+		}
+		
+		if ($pos = strpos($addon->path, 'library/') !== false)
+		{
+			$namespace 			= substr($addon->path, $pos + 7);
+			$namespace 			= substr($namespace, 0, strlen($namespace)-1);
+			$namespace 			= str_replace(DIRECTORY_SEPARATOR, '_', $namespace);
+			$addon->namespace 	= $namespace;
+		}
 	}
 	
 }
