@@ -22,9 +22,6 @@ class CLI_Xf_Phrase extends CLI {
 	
 	public function runGet($unshift=true)
 	{
-		$structure 		= $this->_callStructure;
-		$structure[] 	= $this;
-		
 		$flags = $this->getFlags();
 		
 		if ( ! in_array('exact', $flags))
@@ -32,14 +29,7 @@ class CLI_Xf_Phrase extends CLI {
 			$flags[] = 'exact';
 		}
 		
-		$args = $this->getArguments();
-		
-		if ($unshift)
-		{
-			array_shift($args);
-		}
-		
-		new CLI_Xf_Phrase_Find('CLI_Xf_Phrase_Find', $args, $flags, $this->getOptions(), $structure);
+		$this->manualRun('phrase find', true, $flags);
 	}
 	
 }

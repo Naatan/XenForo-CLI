@@ -29,26 +29,12 @@ class CLI_Xf_Listener_Add extends CLI
 		}
 		
 		// Append listener to file (unless we want to skip it)
-		if ( ! $this->hasFlag('skip-files'))
-		{
-			$this->addToFile($addon, $event);
-		}
+		$this->addToFile($addon, $event);
 		
 		// Add listener to database
-		if ($this->hasFlag('one-process'))
-		{
-			$this->addToDb($addon, $event);
-		}
-		else
-		{
-			$this->printInfo( shell_exec('xf --skip-files --not-final --one-process listener add ' . $event) );
-		}
+		$this->addToDb($addon, $event);
 		
-		if ( ! $this->hasFlag('not-final'))
-		{
-			$this->printMessage('Listener Added');
-		}
-		
+		$this->printMessage('Listener Added');
 	}
 	
 	/**
@@ -119,6 +105,8 @@ class CLI_Xf_Listener_Add extends CLI
 	 */
 	protected function addToFile($addon, $listener)
 	{
+		$this->printInfo('Updating Listener File.. ', false);
+		
 		$className 		= $addon->namespace . '_Listen';
 		$methodName 	= $listener;
 		
@@ -126,7 +114,16 @@ class CLI_Xf_Listener_Add extends CLI
 		$body = '';
 		
 		XfCli_ClassGenerator::create($className);
-		XfCli_ClassGenerator::appendMethod($className, $methodName, $body, $params, array('static'));
+		$result = XfCli_ClassGenerator::appendMethod($className, $methodName, $body, $params, array('static'));
+		
+		if ($result)
+		{
+			$this->printInfo('ok');
+		}
+		else
+		{
+			$this->printInfo('skipped (already exists)');
+		}
 	}
 	
 	/**

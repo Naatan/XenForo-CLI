@@ -110,7 +110,7 @@ class CLI_Xf_Addon_Add extends CLI
 	 */
 	protected function createStructure(&$addon)
 	{
-		$this->printInfo('creating folder structure.. ', false);
+		$this->printInfo('Creating folder structure.. ', false);
 		
 		$base = XfCli_Application::xfBaseDir();
 		

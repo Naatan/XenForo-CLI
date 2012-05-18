@@ -236,7 +236,8 @@ class XfCli_Helpers
 		if (substr($file, 0, 1) != DIRECTORY_SEPARATOR)
 		{
 			$v = $variations;
-			for ($c=count($v)-1;$c>=0; $c--) {
+			for ($c=count($v)-1;$c>=0; $c--)
+			{
 				array_unshift($variations, $cwd . $v[$c]);
 			}
 		}
@@ -250,8 +251,10 @@ class XfCli_Helpers
 		// iterate through variations and check for matches
 		foreach ($variations AS $variation)
 		{
+			$base = dirname($variation . $ds . $file);
+			
 			// Check if this variation should be ignored
-			if (in_array($variation, $ignoreFolders) OR in_array(realpath($variation), $ignoreFolders))
+			if (in_array($base, $ignoreFolders) OR in_array(realpath($base), $ignoreFolders))
 			{
 				continue;
 			}
@@ -272,6 +275,73 @@ class XfCli_Helpers
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Check if given class exists and creates dummy XFCP class to prevent errors if necessary
+	 * 
+	 * @param	string			$className		
+	 * @param	bool			$createXfcp
+	 * @param 	bool 			$alias
+	 * 
+	 * @return	bool							
+	 */
+	public static function classExists($className, $createXfcp = true, $alias = true)
+	{
+		if ($createXfcp)
+		{
+			$xfcpClass = 'XFCP_' . $className;
+			
+			if ( ! XfCli_Helpers::classExists($xfcpClass, false, false))
+			{
+				eval("class $xfcpClass {}");
+			}
+		}
+		
+		if ($alias)
+		{
+			$className = XfCli_Helpers::loadClassAliased($className);
+		}
+		
+		try // Workaround XF's Autoloader that doesn't play nice
+		{
+			return class_exists($className);
+		} catch (Exception $e) {}
+		
+		return false;
+	}
+	
+	/**
+	 * Load class under an alias, so that it can be modified without invalidating the class namespace for this session
+	 * 
+	 * @param		string			$className		
+	 * @param		string|null		$alias
+	 * 
+	 * @return		bool|string						
+	 */
+	public static function loadClassAliased($className, $alias = null)
+	{
+		if ($alias == null)
+		{
+			$alias = $className . '_alias_' . uniqid();
+		}
+		
+		$path = XfCli_Autoloader::getClassPath($className);
+		
+		if ( ! $path)
+		{
+			return false;
+		}
+		
+		$contents = file_get_contents($path);
+		$contents = preg_replace('/(.*class)\s*?'.$className.'/', '$1 ' . $alias, $contents);
+		
+		$filePath = tempnam(sys_get_temp_dir(), 'xfcli');
+		file_put_contents($filePath, $contents);
+		
+		require_once $filePath;
+		
+		return $alias;
 	}
 	
 }

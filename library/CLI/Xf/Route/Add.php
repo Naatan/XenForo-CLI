@@ -28,38 +28,10 @@ class CLI_Xf_Route_Add extends CLI
 			$this->bail('No addon selected');
 		}
 		
-		if ( ! $this->hasFlag('skip-files'))
-		{
-			$this->addToFile($addon, $prefix, $type);
-			
-			$controllerName = $this->getClassName($addon, $prefix, $type, 'Controller');
-			$extendName = 'XenForo_Controller' . XfCli_Helpers::camelcaseString($type, false) . '_Abstract';
-			
-			// Auto create controller class if it doesn't exist et
-			if ( ! XfCli_ClassGenerator::classExists($controllerName))
-			{
-				$class 	= new Zend_CodeGenerator_Php_Class();
-				$class->setName($controllerName);
-				$class->setExtendedClass($extendName);
-				
-				XfCli_ClassGenerator::create($controllerName, $class);
-			}
-		}
+		$this->addToFile($addon, $prefix, $type);
+		$this->addToDb($addon, $prefix, $type);
 		
-		// Add listener to database
-		if ($this->hasFlag('one-process'))
-		{
-			$this->addToDb($addon, $prefix, $type);
-		}
-		else
-		{
-			$this->printInfo( shell_exec('xf --skip-files --not-final --one-process route add ' . $prefix. ' ' . $type) );
-		}
-		
-		if ( ! $this->hasFlag('not-final'))
-		{
-			$this->printMessage('Route Added');
-		}
+		$this->printMessage('Route Added');
 		
 	}
 	
@@ -124,19 +96,50 @@ class CLI_Xf_Route_Add extends CLI
 	 */
 	protected function addToFile($addon, $prefix, $type)
 	{
+		$this->printInfo('Creating Prefix File.. ', false);
+		
 		$className 		= $this->getClassName($addon, $prefix, $type);
 		$controllerName = $this->getClassName($addon, $prefix, $type, 'Controller');
 		
-		$params = XfCli_ClassGenerator::createParams(array(
-			array('routePath'),
-			array('request', 	'Zend_Controller_Request_Http'),
-			array('router', 	'XenForo_Router')
-		));
+		if ( ! XfCli_Helpers::classExists($className))
+		{
+			$params = XfCli_ClassGenerator::createParams(array(
+				array('routePath'),
+				array('request', 	'Zend_Controller_Request_Http'),
+				array('router', 	'XenForo_Router')
+			));
+			
+			$body 	= "return \$router->getRouteMatch('$controllerName', \$routePath, '$prefix');";
+			
+			XfCli_ClassGenerator::create($className);
+			XfCli_ClassGenerator::appendMethod($className, 'match', $body, $params, null, "/$controllerName/i");
+			
+			return $this->printInfo('ok');
+		}
+		else
+		{
+			$this->printInfo('skipped (already exists)');
+		}
 		
-		$body 	= "return \$router->getRouteMatch('$controllerName', \$routePath, '$prefix');";
+		$this->printInfo('Creating Controller File.. ', false);
 		
-		XfCli_ClassGenerator::create($className);
-		XfCli_ClassGenerator::appendMethod($className, 'match', $body, $params, null, "/$controllerName/i");
+		// Auto create controller class if it doesn't exist et
+		if ( ! XfCli_Helpers::classExists($controllerName))
+		{
+			$extendName = 'XenForo_Controller' . XfCli_Helpers::camelcaseString($type, false) . '_Abstract';
+			
+			$class 	= new Zend_CodeGenerator_Php_Class();
+			$class->setName($controllerName);
+			$class->setExtendedClass($extendName);
+			
+			XfCli_ClassGenerator::create($controllerName, $class);
+			
+			return $this->printInfo('ok');
+		}
+		else
+		{
+			$this->printInfo('skipped (already exists)');
+		}
 	}
 	
 	/**

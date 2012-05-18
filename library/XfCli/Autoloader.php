@@ -15,15 +15,41 @@ class XfCli_Autoloader
 	 */
 	public static function run($className)
 	{
-		$file = dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . self::getFileName($className);
-		
-		if ( ! file_exists($file))
+		if ( ! $file = self::getClassPath($className))
 		{
 			return false;
-			
 		}
 		
 		require_once $file;	
+	}
+	
+	/**
+	 * Get file path for class
+	 * 
+	 * @param		string		$className
+	 * 
+	 * @return		string|bool						
+	 */
+	public static function getClassPath($className)
+	{
+		$fileName 	= self::getFileName($className);
+		$dirs 		= array(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR);
+		
+		if (class_exists('XfCli_Application', false))
+		{
+			$xfBase = XfCli_Application::xfBaseDir();
+			array_unshift($dirs, $xfBase . 'library' . DIRECTORY_SEPARATOR);
+		}
+		
+		foreach ($dirs AS $dir)
+		{
+			if (file_exists($dir . $fileName))
+			{
+				return $dir . $fileName;
+			}
+		}
+		
+		return false;
 	}
 	
 	/**

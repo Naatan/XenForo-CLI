@@ -10,29 +10,28 @@ class XfCli_ClassGenerator
 	 * Get CodeGenerator instance for specified class
 	 * 
 	 * @param	string			$className
+	 * @param 	bool 			$alias
 	 * 
 	 * @return	bool|Zend_CodeGenerator_Php_Class							
 	 */
-	public static function get($className)
+	public static function get($className, $alias = true)
 	{
-		if ( ! self::classExists($className))
+		if ( ! XfCli_Helpers::classExists($className, true, $alias))
 		{
 			return false;
 		}
+		
+		$classNameOriginal = $className;
 		
 		// Load class file
-		$filePath = self::getClassPath($className);
-		$file = Zend_CodeGenerator_Php_File::fromReflectedFileName(
-			$filePath, false
-		);
-		
-		if ( ! $file)
+		if ($alias)
 		{
-			return false;
+			$className	= XfCli_Helpers::loadClassAliased($className);
 		}
 		
-		// Get class from file
-		$class = $file->getClass($className);
+		$class = Zend_CodeGenerator_Php_Class::fromReflection(
+			new Zend_Reflection_Class($className)
+		);
 		
 		if ( ! $class)
 		{
@@ -41,6 +40,11 @@ class XfCli_ClassGenerator
 		
 		// Set tab indentation
 		$class->setIndentation('	');
+		
+		if ($alias)
+		{
+			$class->setName($classNameOriginal);
+		}
 		
 		return $class;
 	}
@@ -57,34 +61,6 @@ class XfCli_ClassGenerator
 	{
 		$className 	= $class->getName();
 		return self::create($className, $class);
-	}
-	
-	/**
-	 * Check if given class exists and creates dummy XFCP class to prevent errors if necessary
-	 * 
-	 * @param	string			$className		
-	 * @param	bool			$createXfcp
-	 * 
-	 * @return	bool							
-	 */
-	public static function classExists($className, $createXfcp = true)
-	{
-		if ($createXfcp)
-		{
-			$xfcpClass = 'XFCP_' . $className;
-			
-			if ( ! self::classExists($xfcpClass, false))
-			{
-				eval("class $xfcpClass {}");
-			}
-		}
-		
-		try // Workaround XF's Autoloader that doesn't play nice
-		{
-			return class_exists($className);
-		} catch (Exception $e) {}
-		
-		return false;
 	}
 	
 	/**
@@ -200,7 +176,7 @@ class XfCli_ClassGenerator
 	{
 		
 		// If no class data is given and the class already exists there's no point in "creating" it
-		if ($class == null AND self::classExists($className))
+		if ($class == null AND XfCli_Helpers::classExists($className))
 		{
 			return self::get($className);
 		}

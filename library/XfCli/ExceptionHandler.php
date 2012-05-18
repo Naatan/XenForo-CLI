@@ -12,14 +12,7 @@ class XfCli_ExceptionHandler
 		else
 		{
 			$title = 'EXCEPTION';
-			
-			$bt = '';
-			$backtrace = debug_backtrace();
-			
-			foreach ($backtrace AS $a)
-			{
-				$bt .= '{'.$a['function'].'}()'.(isset($a['file']) ? '('.$a['file'].':{'.$a['line'].'})' : '') . PHP_EOL;
-			}
+			$bt = self::_backtrace();
 		}
 			
 		self::_print($exception->getMessage() . "\n", $title);
@@ -34,6 +27,11 @@ class XfCli_ExceptionHandler
 	
 	public static function handleError($errNo, $errStr, $errFile, $errLine, $errContext)
 	{
+		if (strpos($errStr, 'ob_end_clean') === 0)
+		{
+			return;
+		}
+		
 		if (strpos($errStr, 'Missing argument') !== false AND $cli = CLI::getInstance())
 		{
 			$bt = debug_backtrace();
@@ -53,6 +51,19 @@ class XfCli_ExceptionHandler
 		self::_print($errStr, 'ERROR');
 		self::_print('File: ' . $errFile . ', line: ' . $errLine);
 		die();
+	}
+	
+	public static function _backtrace()
+	{
+		$bt = '';
+		$backtrace = debug_backtrace();
+		
+		foreach ($backtrace AS $a)
+		{
+			$bt .= '{'.$a['function'].'}()'.(isset($a['file']) ? '('.$a['file'].':{'.$a['line'].'})' : '') . PHP_EOL;
+		}
+		
+		return $bt;
 	}
 	
 	protected static function _print($string, $title = null)
@@ -77,7 +88,7 @@ class XfCli_ExceptionHandler
 				echo $title . ': ';
 			}
 			
-			echo $sring . "\n";
+			echo $string . "\n";
 		}
 	}
 	

@@ -10,10 +10,7 @@ class CLI_Xf_Addon extends CLI
 	 */
 	public function run()
 	{
-		$structure 		= $this->_callStructure;
-		$structure[] 	= $this;
-		
-		new CLI_Xf_Addon_Select('CLI_Xf_Addon_Select', $this->getArguments(), $this->getFlags(), $this->getOptions(), $structure);
+		$this->manualRun('addon select');
 	}
 	
 	/**
@@ -23,10 +20,7 @@ class CLI_Xf_Addon extends CLI
 	 */
 	public function runCreate()
 	{
-		$structure 		= $this->_callStructure;
-		$structure[] 	= $this;
-		
-		new CLI_Xf_Addon_Add('CLI_Xf_Addon_Add', $this->getArguments(), $this->getFlags(), $this->getOptions(), $structure);
+		$this->manualRun('addon add');
 	}
 	
 	/**
@@ -64,10 +58,7 @@ class CLI_Xf_Addon extends CLI
 		}
 		else
 		{
-			$this->setFlag('skip-select');
-			$callStructure = $this->_callStructure;
-			$callStructure[] = $this;
-			new CLI_Xf_Addon_Add('CLI_Xf_Addon_Add', $this->getArguments(), $this->getFlags(), $this->getOptions(), $callStructure);
+			$this->manualRun('addon add', tue, array('skip-select'));
 			return $this->getAddon($addonId, false);
 		}
 	}

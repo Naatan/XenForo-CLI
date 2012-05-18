@@ -40,19 +40,31 @@ class XfCli_Application
 	}
 	
 	/**
+	 * Set exception / error handlers
+	 * 
+	 * @return		void				
+	 */
+	public static function setExceptionHandlers()
+	{
+		set_exception_handler(array('XfCli_ExceptionHandler', 'handleException'));
+		set_error_handler(array('XfCli_ExceptionHandler', 'handleError'));
+		
+		CLI::$_useExceptions 	= true;
+		CLI::$_exceptionClass 	= 'XfCli_Exception';
+	}
+	
+	/**
 	 * Set include paths for Zend libraries
 	 * 
 	 * @return	void							
 	 */
 	protected static function setIncludePaths()
 	{
-		set_include_path(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . PATH_SEPARATOR . '.' . PATH_SEPARATOR . get_include_path());
-		
-		set_exception_handler(array('XfCli_ExceptionHandler', 'handleException'));
-		set_error_handler(array('XfCli_ExceptionHandler', 'handleError'));
-		
-		CLI::$_useExceptions 	= true;
-		CLI::$_exceptionClass 	= 'XfCli_Exception';
+		set_include_path(
+			dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . PATH_SEPARATOR .
+			self::xfBaseDir()  . 'library' . DIRECTORY_SEPARATOR .
+			'.' . PATH_SEPARATOR . get_include_path()
+		);
 	}
 	
 	/**
@@ -80,7 +92,7 @@ class XfCli_Application
 		$ds 		= DIRECTORY_SEPARATOR;
 		$baseDir 	= getcwd() . $ds;
 		
-		if ($baseDir = XfCli_Helpers::locate('Application.php', array('library', 'XenForo', 'library/XenForo')))
+		if ($baseDir = XfCli_Helpers::locate('Application.php', array('XenForo', 'library/XenForo')))
 		{
 			self::$_baseDir = realpath(dirname($baseDir) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..') . DIRECTORY_SEPARATOR;
 		}
@@ -106,14 +118,14 @@ class XfCli_Application
 		$ds = DIRECTORY_SEPARATOR;
 		$up = '..' . $ds;
 		
-		$config = self::loadConfigJson(dirname(__FILE__) . $ds.$up.$up.$up. '.xfcli-config');
+		$config = self::loadConfigJson(dirname(__FILE__) . $ds.$up.$up. '.xfcli-config');
 		
 		// TODO: ability to overwrite this with --addon-config=path option. Useful for one off changes to something
 		$config = XfCli_Helpers::objectMerge($config, self::loadConfigJson(self::xfBaseDir() . '.xfcli-config'));
 		
 		if ( ! empty($config->addon_config))
 		{
-			$file = XfCli_Helpers::locate($config->addon_config, array('library'), self::xfBaseDir());
+			$file = XfCli_Helpers::locate($config->addon_config, array('library'), null, array(self::xfBaseDir()));
 			
 			if ($file)
 			{

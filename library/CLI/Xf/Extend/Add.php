@@ -56,19 +56,9 @@ class CLI_Xf_Extend_Add extends CLI
 		// Write the class extend to the listener file
 		$this->addToFile($addonName, $extend, $extendWith);
 		
-		// Auto create extend class if it doesn't exist et
-		if ( ! XfCli_ClassGenerator::classExists($extendWith))
-		{
-			$class 	= new Zend_CodeGenerator_Php_Class();
-			$class->setName($extendWith);
-			$class->setExtendedClass('XFCP_' . $extendWith);
-			
-			XfCli_ClassGenerator::create($extendWith, $class);
-		}
-		
 		// Add the listener in a seperate process as this one has the old version of the class loaded
 		$classType = $this->getClassType($extend);
-		$this->printInfo( shell_exec('xf --skip-files --not-final listener add load_class_' . $classType) );
+		$this->manualRun('listener add load_class_' . $classType, false);
 		
 		$this->printMessage('Class Extended');
 	}
@@ -84,6 +74,8 @@ class CLI_Xf_Extend_Add extends CLI
 	 */
 	protected function addToFile($addonName, $extend, $extendWith)
 	{
+		$this->printInfo('Updating Listener File.. ', false);
+		
 		// Detect class info
 		$className 		= $addonName . '_Listen';
 		$classType 		= $this->getClassType($extend);
@@ -116,7 +108,34 @@ class CLI_Xf_Extend_Add extends CLI
 		
 		// Create the class and append / modify the method
 		XfCli_ClassGenerator::create($className);
-		XfCli_ClassGenerator::appendMethod($className, $methodName, $body, $params, array('static'), $ignoreRegex);
+		$result = XfCli_ClassGenerator::appendMethod($className, $methodName, $body, $params, array('static'), $ignoreRegex);
+		
+		if ($result)
+		{
+			$this->printInfo('ok');
+		}
+		else
+		{
+			$this->printInfo('skipped (already exists)');
+		}
+		
+		$this->printInfo('Creating Class File.. ', false);
+		
+		// Auto create extend class if it doesn't exist et
+		if ( ! XfCli_Helpers::classExists($extendWith))
+		{
+			$class 	= new Zend_CodeGenerator_Php_Class();
+			$class->setName($extendWith);
+			$class->setExtendedClass('XFCP_' . $extendWith);
+			
+			XfCli_ClassGenerator::create($extendWith, $class);
+			
+			$this->printInfo('ok');
+		}
+		else
+		{
+			$this->printInfo('skipped (alread exists)');
+		}
 	}
 	
 	/**
