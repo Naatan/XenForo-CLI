@@ -10,7 +10,7 @@ class CLI_Xf_Addon extends CLI
 	 */
 	public function run()
 	{
-		$this->manualRun('addon select');
+		$this->printMessage("Active Addon: " . XfCli_Application::getConfig()->addon->name);
 	}
 	
 	/**
@@ -43,8 +43,7 @@ class CLI_Xf_Addon extends CLI
 			$addonId 	= $config->addon->id;
 		}
 		
-		$addonModel = XenForo_Model::create('XenForo_Model_AddOn');
-		$addon 		= $addonModel->getAddOnById($addonId);
+		$addon = $this->getAddonById($addonId);
 		
 		if ($addon AND $configFile)
 		{
@@ -76,6 +75,85 @@ class CLI_Xf_Addon extends CLI
 		$config = array("addon_config" => $addon['config_file']);
 		
 		XfCli_Application::writeConfig($config);
+	}
+	
+	/**
+	 * Get addon by ID
+	 * 
+	 * @param		string		$addonId
+	 * 
+	 * @return		array|bool						
+	 */
+	public function getAddonById($addonId)
+	{
+		$addonModel = XenForo_Model::create('XenForo_Model_AddOn');
+		$addon 		= $addonModel->getAddOnById($addonId);
+		
+		return $addon;
+	}
+	
+	/**
+	 * Get addon by name
+	 * 
+	 * @param		string		$addonName
+	 * 
+	 * @return		array|bool						
+	 */
+	public function getAddonByName($addonName)
+	{
+		$addonModel = XenForo_Model::create('XenForo_Model_AddOn');
+		$addons 	= $addonModel->getAllAddOns();
+		
+		if ( ! $addons)
+		{
+			return false;
+		}
+		
+		foreach ($addons AS $addon)
+		{
+			if ($addon['title'] == $addonName)
+			{
+				return $addon;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Get addon by path
+	 * 
+	 * @param		string		$addonPath
+	 * 
+	 * @return		array|bool
+	 */
+	public function getAddonByPath($addonPath)
+	{
+		$base 	= XfCli_Application::xfBaseDir();
+		$file 	= XfCli_Helpers::locate('.xfcli-config', array($addonPath), $base, array($base));
+		
+		if ( ! $file)
+		{
+			return false;
+		}
+		
+		$config = XfCli_Application::loadConfigJson($base . $file);
+		
+		if ( ! isset($config->addon->id))
+		{
+			return false;
+		}
+		
+		$addon = $this->getAddonById($config->addon->id);
+		
+		if ( ! $addon)
+		{
+			return false;
+		}
+		
+		$addon['config_file'] = $file;
+		
+		return $addon;
 	}
 	
 }

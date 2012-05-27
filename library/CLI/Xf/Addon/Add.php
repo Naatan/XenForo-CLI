@@ -6,26 +6,26 @@
 class CLI_Xf_Addon_Add extends CLI
 {
 	protected $_help = '
-		usage: addon add <addon_name> [<addon_id>] [--type=bare|normal|full] [--include-examples] [--path=PATH]
+		usage: addon add <addon_name> [--id=addon_id] [--path=PATH] [--type=bare|normal|full] [--include-examples] [--skip-select]
 
-		<addon_id>
+		--id
 			The addon ID by default is the same as the <addon_name> except with the first letter lower case and non alphanumeric characters stripped. You can overwrite it with this option.
-
+			
+		--path
+			By default the add-on will be made in the library folder. You can overwrite this with --path
+			
 		--type (not yet implemented)
 			There are 3 types of directories we can make:
 				bare: just the add-on folder in library,
 				normal (default): add-on folder with most commonly used folders (ControllerPublic, ControllerAdmin, Model, DataWriter, ViewPublic, ViewAdmin, Route, Route/Prefix, Route/PrefixAdmin)
 				full: this adds all the folders you could ever need. Handlers, Helpers, BbCode etc..
-			Note: normal and full will 
-
-		--path
-			By default the add-on will be made in the library folder. You can overwrite this with --path
+			Note: normal and full will
+			
+		--include-examples (not yet implemented)
+			TODO!
 			
 		--skip-select
 			Do not select the addon as after creation
-
-		--include-examples (not yet implemented)
-			TODO!
 	';
 	
 	/**
@@ -35,11 +35,11 @@ class CLI_Xf_Addon_Add extends CLI
 	 * 
 	 * @return	void							
 	 */
-	public function run($addonName, $addonId = null)
+	public function run($addonName)
 	{
 		// Prepare default data
 		$addon = (object) array(
-			'id' 		=> $addonId,
+			'id' 		=> $this->getFlag('id'),
 			'name'		=> $addonName,
 			'namespace' => ucfirst($addonId),
 			'path'		=> null
