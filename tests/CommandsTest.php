@@ -91,7 +91,8 @@ class Commands extends PHPUnit_Framework_TestCase
 	
 	public static function runCommand(array $args, array $flags = array(), array $options = array())
 	{
-		new CLI_Xf('CLI_Xf', $args, $flags, $options);
+		$cli = new CLI_Xf(false);
+		$cli->manualRun($args, false, $flags, $options);
 	}
 	
 }
