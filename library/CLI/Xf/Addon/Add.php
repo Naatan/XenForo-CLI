@@ -31,7 +31,7 @@ class CLI_Xf_Addon_Add extends CLI
 	/**
 	 * Run the command
 	 * 
-	 * @param	string			$addonId
+	 * @param	string			$addonName
 	 * 
 	 * @return	void							
 	 */

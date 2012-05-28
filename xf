@@ -15,7 +15,7 @@ XenForo_Autoloader::getInstance()->setupAutoloader($xfLibrary);
  
 // Initialize XenForo App
 XenForo_Application::setDebugMode(true);
-XenForo_Application::initialize($xfLibrary, $xfLibrary);
+XenForo_Application::initialize($xfLibrary, XfCli_Application::xfBaseDir());
 $dependencies = new XenForo_Dependencies_Public();
 $dependencies->preLoadData();
  
