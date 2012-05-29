@@ -122,7 +122,7 @@ usage: 	addon import folderPath|gitRepoUrl|hgRepoUrl
 						continue;
 					}
 				}
-				
+
 				if ( ! $this->_importFolder($obj->getPathname(), $rootPath, $logPaths, $config))
 				{
 					return false;
@@ -221,7 +221,26 @@ usage: 	addon import folderPath|gitRepoUrl|hgRepoUrl
 
 	protected function _cloneHg($url, $pull = false)
 	{
+		$path = $this->_getRepoPath($url);
 
+		if ($pull)
+		{
+			$this->printInfo('Updating hg repository at ' . $path . '...');
+			shell_exec('cd ' . $path . ' && hg pull');
+			return $path;
+		}
+
+		$this->printInfo('Cloning hg repository ' . $url . ' into ' . $path . '...');
+
+		// TODO: error checking
+		shell_exec('hg clone ' . $url . ' ' . $path);
+
+		if ( ! is_dir($path . DIRECTORY_SEPARATOR . '.hg'))
+		{
+			$this->bail('Failed to clone hg repository: ' . $url);
+		}
+
+		return $path;
 	}
 
 	protected function _getRepoPath($url)
