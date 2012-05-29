@@ -38,17 +38,22 @@ usage: 	addon import folderPath|gitRepoUrl|hgRepoUrl
 			$extraConfig['importUrl'] = $path;
 
 			// The following might not be correct for all test cases, but we will give it a go
-			if (strpos(trim(shell_exec('git ls-remote ' . $path)), 'fatal:') !== 0)
+			$this->printInfo('Checking for git repository...');
+			if (strpos(trim(exec('git ls-remote ' . $path . ' 2>&1')), 'fatal:') !== 0)
 			{
 				$path = $this->_cloneGit($path, $this->getOption('addon-config'));
 			}
-			else if (strpos(trim(shell_exec('hg identify ' . $path)), 'abort:') !== 0)
-			{
-				$path = $this->_cloneHg($path, $this->getOption('addon-config'));
-			}
 			else
 			{
-				$this->bail('No valid folder path, git repo URL or hg repo URL was provided: ' . $path);
+				$this->printInfo('Checking for hg repository...');
+				if (strpos(trim(exec('hg identify ' . $path . ' 2>&1')), 'abort:') !== 0)
+				{
+					$path = $this->_cloneHg($path, $this->getOption('addon-config'));
+				}
+				else
+				{
+					$this->bail('No valid folder path, git repo URL or hg repo URL was provided: ' . $path);
+				}
 			}
 		}
 
@@ -63,9 +68,9 @@ usage: 	addon import folderPath|gitRepoUrl|hgRepoUrl
 
 		list ($xml) = glob($path . DIRECTORY_SEPARATOR . '*.xml');
 		$extraConfig['importPath'] = $path;
-		if (is_dir($path . 'upload'))
+		if (is_dir($path . DIRECTORY_SEPARATOR . 'upload'))
 		{
-			$path = $path . 'upload';
+			$path = $path . DIRECTORY_SEPARATOR . 'upload';
 		}
 
 		$addonConfig = $this->getOption('addon-config');
@@ -79,7 +84,12 @@ usage: 	addon import folderPath|gitRepoUrl|hgRepoUrl
 		{
 			try 
 			{
-				$this->manualRun('addon install ' . $xml, false, array('upgrade-if-exists'), array('paths' => $logPaths, 'extra-config' => $extraConfig));
+				$flags = array();
+				if ($addonConfig)
+				{
+					$flags[] = 'upgrade-if-exists';
+				}
+				$this->manualRun('addon install ' . $xml, false, $flags, array('paths' => $logPaths, 'extra-config' => $extraConfig));
 			}
 			catch (Exception $e)
 			{
@@ -248,8 +258,7 @@ usage: 	addon import folderPath|gitRepoUrl|hgRepoUrl
 		$path = $this->getOption('path-for-repo');
 		if ( ! $path)
 		{
-			$folder = strrchr($url, '/');
-			$folder = substr($folder, 1, strpos($folder, '.') - 1);
+			$folder = ltrim(str_replace('.git', '', strrchr(rtrim($url, '/'), '/')), '/');
 			$path = XfCli_Application::xfBaseDir() . 'repos' . DIRECTORY_SEPARATOR . $folder;
 			/*if (is_dir($path))
 			{
