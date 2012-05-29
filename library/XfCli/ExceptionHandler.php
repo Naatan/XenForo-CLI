@@ -47,7 +47,9 @@ class XfCli_ExceptionHandler
 				die();
 			}
 		}
-		
+
+		throw new Exception($errStr . ' in ' . $errFile . ' on line ' . $errLine);
+
 		self::_print($errStr, 'ERROR');
 		self::_print('File: ' . $errFile . ', line: ' . $errLine);
 		die();
