@@ -3,10 +3,11 @@
 class CLI_Xf_Addon_Install extends CLI
 {
 	protected $_help = '
-usage: addon install pathToXmlFile|pathToDevelopmentXmlFolder [--paths=PATHS]
-	
-	--paths 
-		list of paths this addon is associated with, will be added to the config to help with updating and removing';
+		usage: addon install <xml file / folder> [--paths=PATHS]
+			
+			--paths 
+				list of paths this addon is associated with, will be added to the config to help with updating and removing
+	';
 
 	public function run($path)
 	{

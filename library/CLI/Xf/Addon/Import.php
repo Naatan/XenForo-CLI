@@ -5,21 +5,19 @@
 class CLI_Xf_Addon_Import extends CLI
 {
 	protected $_help = '
-Use this to import an add-on quickly from a repo or folder. It has to have the right structure, upload folder and addon-*.xml file. It will be either copied over or symlinked depending on the --dont-use-symlinks option.
-
-usage: 	addon import folderPath|gitRepoUrl|hgRepoUrl 
-	[--path-for-repo=path] 
-	[--dont-use-symlinks]
-
-	--path-for-repo
-		The folder for the repo if importing for one. Defaults to /repos/reponame
-
-	--dont-use-symlinks
-		This will do a hard copy instead of symlinking the repo
-
-	--addon-config
-		For upgrading an addon, mainly used by "addon update" when an addon is selected
-';
+		Use this to import an add-on quickly from a repo or folder. It has to have the right structure, upload folder and addon-*.xml file. It will be either copied over or symlinked depending on the --no-symlinks option.
+		
+		usage: 	addon import <path / repo url (git, hg)>  [--path=path]  [--addon=path] [--no-symlinks]
+		
+			--path
+				The folder for the repo if importing for one. Defaults to /repos/reponame
+				
+			--addon
+				For upgrading an addon, mainly used by "addon update" when an addon is selected, currently only supports the addon\'s config path as a value
+		
+			--no-symlinks
+				This will do a hard copy instead of symlinking the repo
+	';
 
 	/**
 	 * Run the command
@@ -155,7 +153,7 @@ usage: 	addon import folderPath|gitRepoUrl|hgRepoUrl
 				return false;
 			}
 
-			if ( ! $this->hasFlag('dont-use-symlinks'))
+			if ( ! $this->hasFlag('no-symlinks'))
 			{
 				shell_exec('ln -s ' . $obj->getPathname() . ' ' . $xfEquivalent);
 			}
@@ -255,7 +253,7 @@ usage: 	addon import folderPath|gitRepoUrl|hgRepoUrl
 
 	protected function _getRepoPath($url)
 	{
-		$path = $this->getOption('path-for-repo');
+		$path = $this->getOption('path');
 		if ( ! $path)
 		{
 			$folder = ltrim(str_replace('.git', '', strrchr(rtrim($url, '/'), '/')), '/');
