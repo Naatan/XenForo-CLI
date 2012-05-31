@@ -22,7 +22,7 @@ class CLI_Xf_Rebuild extends CLI
 		$caches = explode(',', $caches);
 		array_walk($caches, create_function('&$val', '$val = trim($val);')); 
 		
-		if ( ! empty($caches) AND $this->hasOption('caches'))
+		if (empty($caches) AND $this->hasOption('caches'))
 		{
 			switch ($this->getOption('caches'))
 			{
