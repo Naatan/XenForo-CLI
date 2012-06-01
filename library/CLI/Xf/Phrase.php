@@ -10,26 +10,18 @@ class CLI_Xf_Phrase extends CLI {
 	 */
 	protected $_help = '
 		Possible commands:
-			add
-			find
-			get
+		
+		(you can excute these commands with --help to view their instructions)
+		
+		xf phrase ..
+			- add
+			- find
+			- get
 	';
 	
 	public function run()
 	{
 		$this->runGet(false);
-	}
-	
-	public function runGet($unshift=true)
-	{
-		$flags = $this->getFlags();
-		
-		if ( ! in_array('exact', $flags))
-		{
-			$flags[] = 'exact';
-		}
-		
-		$this->manualRun('phrase find', true, $flags);
 	}
 	
 }

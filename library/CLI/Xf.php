@@ -6,6 +6,45 @@
 class CLI_Xf extends CLI
 {
 	
+	protected $_help = '
+		Possible commands:
+		
+		(you can excute these commands with --help to view their instructions)
+		
+			Addons
+		
+				- addon
+				- addon add
+				- addon import
+				- addon install
+				- addon list
+				- addon select
+				- addon show
+				- addon uninstall
+			
+			Code Events
+			
+				- extend
+				- extend add
+				- extend delete
+				- listener add
+				- listener delete
+			
+			Phrases
+			
+				- phrase add
+				- phrase find
+				- phrase get
+			
+			Templates
+			
+				- template add
+			
+			Routes
+			
+				- route add
+	';
+	
 	/**
 	 * Default run method
 	 * 
@@ -59,8 +98,7 @@ class CLI_Xf extends CLI
 				foreach ($value as $flag)
 				{
 					if ( ! $this->hasFlag($flag))
-						// TODO: add a setter to cli.php to do this
-						$this->args['flags'][] = $flag;
+						$this->setFlag($flag);
 				}
 
 				continue;
@@ -68,8 +106,7 @@ class CLI_Xf extends CLI
 
 			if ( ! $this->hasOption($option))
 			{
-				// TODO: add a setter to cli.php to do this
-				$this->args['options'][$option] = $value;
+				$this->setOption($option, $value);
 			}
 		}
 	}

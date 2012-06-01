@@ -10,8 +10,12 @@ class CLI_Xf_Listener extends CLI {
 	 */
 	protected $_help = '
 		Possible commands:
-			add
-			delete
+		
+		(you can excute these commands with --help to view their instructions)
+		
+		xf listener ..
+			- add
+			- delete
 	';
 	
 	public function run()

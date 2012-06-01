@@ -22,7 +22,7 @@ class CLI_Xf_Addon_Add extends CLI
 			Note: normal and full will
 			
 		--include-examples (not yet implemented)
-			TODO!
+			TODO: add examples
 			
 		--skip-select
 			Do not select the addon as after creation

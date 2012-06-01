@@ -11,7 +11,7 @@ class CLI_Xf_Template_Add extends CLI
 	 */
 	protected $_help = '
 		Example: xf template add <name> [--admin]
-			--admin - whether this is an admin template, any value that doesn\t match false will work to enable
+			--admin - whether this is an admin template
 	';
 	
 	/**

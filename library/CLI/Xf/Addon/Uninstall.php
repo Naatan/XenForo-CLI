@@ -3,10 +3,10 @@
 /**
  * Delete an addon
  */
-class CLI_Xf_Addon_Delete extends CLI
+class CLI_Xf_Addon_Uninstall extends CLI
 {
 	protected $_help = '
-		usage: addon delete <addon_name|addon_id|path> [--delete-files] [-y]
+		usage: addon uninstall <addon_name|addon_id|path> [--delete-files] [-y]
 		
 		--delete-files
 			Delete the related addon files as well (currently only works if executed with addon path)
@@ -18,8 +18,6 @@ class CLI_Xf_Addon_Delete extends CLI
 	/**
 	 * Run the command
 	 *
-	 * TODO: attempt to detect folder if ran with addon id or addon name
-	 * 
 	 * @param	string			$addonId
 	 * 
 	 * @return	void							
