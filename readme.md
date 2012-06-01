@@ -8,7 +8,7 @@ developing their addons.
 
 While XenForo provides a very useful user interface for managing many of the processes involved in
 addon development, it has the unfortunate side effect of drawing you out of "the zone" when
-developing addons. Not only that, simpe things like extending a controller can cost you around 2
+developing addons. Not only that, simple things like extending a controller can cost you around 2
 minutes to set up. This may not sound like much, but during this time you are pulled entirely out of
 the flow you were in while developing an addon. If instead you could do this in 2 seconds, without
 even leaving your IDE, this would seriously improve productivity and creativity. Not only because
