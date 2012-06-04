@@ -114,7 +114,7 @@ class CLI_Xf_Route_Add extends CLI
 			XfCli_ClassGenerator::create($className);
 			XfCli_ClassGenerator::appendMethod($className, 'match', $body, $params, null, "/$controllerName/i");
 			
-			return $this->printInfo('ok');
+			$this->printInfo('ok');
 		}
 		else
 		{
@@ -134,7 +134,7 @@ class CLI_Xf_Route_Add extends CLI
 			
 			XfCli_ClassGenerator::create($controllerName, $class);
 			
-			return $this->printInfo('ok');
+			$this->printInfo('ok');
 		}
 		else
 		{
