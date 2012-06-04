@@ -79,6 +79,12 @@ class CLI_Xf_Addon extends CLI
 	public function selectAddon($addonId)
 	{
 		$addon 	= $this->getAddon($addonId, $this->hasFlag('auto-create'));
+		
+		if ( ! isset($addon['config_file']))
+		{
+			$this->bail('Could not detect addon: ' . $addonId);
+		}
+		
 		$config = array("addon_config" => $addon['config_file']);
 		
 		XfCli_Application::writeConfig($config);
