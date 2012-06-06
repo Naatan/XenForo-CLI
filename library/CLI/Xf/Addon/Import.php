@@ -234,7 +234,7 @@ class CLI_Xf_Addon_Import extends CLI
 		if ($pull)
 		{
 			$this->printInfo('Updating hg repository at ' . $path . '...');
-			shell_exec('cd ' . $path . ' && hg pull');
+			shell_exec('cd ' . $path . ' && hg pull --update');
 			return $path;
 		}
 
