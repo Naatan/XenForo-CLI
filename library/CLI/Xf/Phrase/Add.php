@@ -47,7 +47,7 @@ class CLI_Xf_Phrase_Add extends CLI
 	 */
 	protected function addToDb($addon, $name, $value)
 	{
-		$this->printInfo("Adding phrase to database.. ", false);
+		$this->printMessage("Adding phrase to database.. ", false);
 		
 		// Validate if listener already exists
 		$phraseModel 	= XenForo_Model::create('XenForo_Model_Phrase');
@@ -55,7 +55,7 @@ class CLI_Xf_Phrase_Add extends CLI
 		
 		if ($phrase)
 		{
-			$this->printInfo("skipped (already exists)");
+			$this->printMessage("skipped (already exists)");
 			return;
 		}
 		
@@ -75,7 +75,7 @@ class CLI_Xf_Phrase_Add extends CLI
 			$dw->bulkSet($dwInput);
 			$dw->save();
 			
-			$this->printInfo("ok");
+			$this->printMessage("ok");
 		}
 		catch (Exception $e)
 		{

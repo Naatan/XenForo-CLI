@@ -36,14 +36,14 @@ class CLI_Xf_Addon_Import extends CLI
 			$extraConfig['importUrl'] = $path;
 
 			// The following might not be correct for all test cases, but we will give it a go
-			$this->printInfo('Checking for git repository...');
+			$this->printMessage('Checking for git repository...');
 			if (strpos(trim(exec('git ls-remote ' . $path . ' 2>&1')), 'fatal:') !== 0)
 			{
 				$path = $this->_cloneGit($path, $this->getOption('addon-config'));
 			}
 			else
 			{
-				$this->printInfo('Checking for hg repository...');
+				$this->printMessage('Checking for hg repository...');
 				if (strpos(trim(exec('hg identify ' . $path . ' 2>&1')), 'abort:') !== 0)
 				{
 					$path = $this->_cloneHg($path, $this->getOption('addon-config'));
@@ -62,7 +62,7 @@ class CLI_Xf_Addon_Import extends CLI
 	{
 		$this->_assertCanImport($path);
 
-		$this->printInfo('Importing addon source from ' . $path . '...');
+		$this->printMessage('Importing addon source from ' . $path . '...');
 
 		list ($xml) = glob($path . DIRECTORY_SEPARATOR . '*.xml');
 		$extraConfig['importPath'] = $path;
@@ -91,7 +91,7 @@ class CLI_Xf_Addon_Import extends CLI
 			}
 			catch (Exception $e)
 			{
-				$this->printInfo($this->colorText('Error: ', self::RED) . $e->getMessage());
+				$this->printMessage($this->colorText('Error: ', self::RED) . $e->getMessage());
 				$this->_rollback($path, $logPaths);
 			}
 		}
@@ -148,7 +148,7 @@ class CLI_Xf_Addon_Import extends CLI
 					}
 				}
 
-				$this->printInfo($this->colorText('Error: ', self::RED) . 'File already exists in your XenForo install: ' . $xfEquivalent);
+				$this->printMessage($this->colorText('Error: ', self::RED) . 'File already exists in your XenForo install: ' . $xfEquivalent);
 				$this->_rollback($rootPath, $logPaths);
 				return false;
 			}
@@ -170,7 +170,7 @@ class CLI_Xf_Addon_Import extends CLI
 
 	protected function _rollback($repoPath, $paths)
 	{
-		$this->printInfo('Rolling back changes...');
+		$this->printMessage('Rolling back changes...');
 
 		// TODO: use PHP and not CMD to remove?
 		foreach ($paths AS $path)
@@ -209,12 +209,12 @@ class CLI_Xf_Addon_Import extends CLI
 
 		if ($pull)
 		{
-			$this->printInfo('Updating git repository at ' . $path . '...');
+			$this->printMessage('Updating git repository at ' . $path . '...');
 			shell_exec('cd ' . $path . ' && git pull');
 			return $path;
 		}
 
-		$this->printInfo('Cloning git repository ' . $url . ' into ' . $path . '...');
+		$this->printMessage('Cloning git repository ' . $url . ' into ' . $path . '...');
 
 		// TODO: error checking
 		shell_exec('git clone ' . $url . ' ' . $path);
@@ -233,12 +233,12 @@ class CLI_Xf_Addon_Import extends CLI
 
 		if ($pull)
 		{
-			$this->printInfo('Updating hg repository at ' . $path . '...');
+			$this->printMessage('Updating hg repository at ' . $path . '...');
 			shell_exec('cd ' . $path . ' && hg pull');
 			return $path;
 		}
 
-		$this->printInfo('Cloning hg repository ' . $url . ' into ' . $path . '...');
+		$this->printMessage('Cloning hg repository ' . $url . ' into ' . $path . '...');
 
 		// TODO: error checking
 		shell_exec('hg clone ' . $url . ' ' . $path);

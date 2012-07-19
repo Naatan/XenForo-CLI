@@ -16,9 +16,25 @@ class Commands extends PHPUnit_Framework_TestCase
 	/**
 	 * @runInSeparateProcess enabled
 	 */
+	public function test__AddonList()
+	{
+		self::runCommand(array('addon', 'list'));
+	}
+	
+	/**
+	 * @runInSeparateProcess enabled
+	 */
 	public function test__AddonSelect()
 	{
 		self::runCommand(array('addon', 'select', self::getAddon()));
+	}
+	
+	/**
+	 * @runInSeparateProcess enabled
+	 */
+	public function test__AddonShow()
+	{
+		self::runCommand(array('addon', 'show', self::getAddon()));
 	}
 	
 	/**
@@ -35,22 +51,6 @@ class Commands extends PHPUnit_Framework_TestCase
 	public function test__ListenerAdd()
 	{
 		self::runCommand(array('listener', 'add', 'load_class_controller'));
-	}
-	
-	/**
-	 * @runInSeparateProcess enabled
-	 */
-	public function test__RouteAdd()
-	{
-		self::runCommand(array('route', 'add', strtolower(self::getAddon())));
-	}
-	
-	/**
-	 * @runInSeparateProcess enabled
-	 */
-	public function test__TemplateAdd()
-	{
-		self::runCommand(array('template', 'add', strtolower(self::getAddon())));
 	}
 	
 	/**
@@ -75,6 +75,30 @@ class Commands extends PHPUnit_Framework_TestCase
 	public function test__PhraseGet()
 	{
 		self::runCommand(array('phrase', 'get', strtolower(self::getAddon())));
+	}
+	
+	/**
+	 * @runInSeparateProcess enabled
+	 */
+	public function test__GenerateController()
+	{
+		self::runCommand(array('generate', 'controller', 'test'));
+	}
+	
+	/**
+	 * @runInSeparateProcess enabled
+	 */
+	public function test__TemplateAdd()
+	{
+		self::runCommand(array('template', 'add', strtolower(self::getAddon())));
+	}
+	
+	/**
+	 * @runInSeparateProcess enabled
+	 */
+	public function test__RouteAdd()
+	{
+		self::runCommand(array('route', 'add', strtolower(self::getAddon())));
 	}
 	
 	public static function getAddon($new = false)

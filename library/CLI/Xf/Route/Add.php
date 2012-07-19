@@ -46,7 +46,7 @@ class CLI_Xf_Route_Add extends CLI
 	 */
 	protected function addToDb($addon, $prefix, $type)
 	{
-		$this->printInfo("Adding route prefix to database.. ", false);
+		$this->printMessage("Adding route prefix to database.. ", false);
 		
 		// Validate if listener already exists
 		$routeModel = XenForo_Model::create('XenForo_Model_RoutePrefix');
@@ -54,7 +54,7 @@ class CLI_Xf_Route_Add extends CLI
 		
 		if ($route)
 		{
-			$this->printInfo("skipped (already exists)");
+			$this->printMessage("skipped (already exists)");
 			return;
 		}
 		
@@ -77,7 +77,7 @@ class CLI_Xf_Route_Add extends CLI
 			$dw->bulkSet($dwInput);
 			$dw->save();
 			
-			$this->printInfo("ok");
+			$this->printMessage("ok");
 		}
 		catch (Exception $e)
 		{
@@ -96,7 +96,7 @@ class CLI_Xf_Route_Add extends CLI
 	 */
 	protected function addToFile($addon, $prefix, $type)
 	{
-		$this->printInfo('Creating Prefix File.. ', false);
+		$this->printMessage('Creating Prefix File.. ', false);
 		
 		$className 		= $this->getClassName($addon, $prefix, $type);
 		$controllerName = $this->getClassName($addon, $prefix, $type, 'Controller');
@@ -114,14 +114,14 @@ class CLI_Xf_Route_Add extends CLI
 			XfCli_ClassGenerator::create($className);
 			XfCli_ClassGenerator::appendMethod($className, 'match', $body, $params, null, "/$controllerName/i");
 			
-			$this->printInfo('ok');
+			$this->printMessage('ok');
 		}
 		else
 		{
-			$this->printInfo('skipped (already exists)');
+			$this->printMessage('skipped (already exists)');
 		}
 		
-		$this->printInfo('Creating Controller File.. ', false);
+		$this->printMessage('Creating Controller File.. ', false);
 		
 		// Auto create controller class if it doesn't exist et
 		if ( ! XfCli_Helpers::classExists($controllerName))
@@ -134,11 +134,11 @@ class CLI_Xf_Route_Add extends CLI
 			
 			XfCli_ClassGenerator::create($controllerName, $class);
 			
-			$this->printInfo('ok');
+			$this->printMessage('ok');
 		}
 		else
 		{
-			$this->printInfo('skipped (already exists)');
+			$this->printMessage('skipped (already exists)');
 		}
 	}
 	

@@ -39,9 +39,9 @@ class CLI_Xf_Addon_Add extends CLI
 	{
 		// Prepare default data
 		$addon = (object) array(
-			'id' 		=> $this->getFlag('id'),
+			'id'  		=> $this->getOption('id'),
 			'name'		=> $addonName,
-			'namespace' => ucfirst($addonId),
+			'namespace' => ucfirst($this->getOption('id')),
 			'path'		=> null
 		);
 		
@@ -50,8 +50,8 @@ class CLI_Xf_Addon_Add extends CLI
 		// Parse addon ID
 		if (empty($addon->id))
 		{
-			$addon->id 			= strtolower(preg_replace('/[^a-z0-9]/i', '', $addon->name));
-			$addon->namespace 	= ucfirst($addon->id);
+			$addon->id       	= strtolower(preg_replace('/[^a-z0-9]/i', '', $addon->name));
+			$addon->namespace	= ucfirst($addon->id);
 		}
 		
 		// Add addon to DB
@@ -79,7 +79,7 @@ class CLI_Xf_Addon_Add extends CLI
 	 */
 	protected function addToDb($addon)
 	{
-		$this->printInfo('Adding addon "' . $addon->name. '" to database.. ', false);
+		$this->printMessage('Adding addon "' . $addon->name. '" to database.. ', false);
 		
 		$addonModel = XenForo_Model::create('XenForo_Model_AddOn');
 		if ( ! $addonModel->getAddOnById($addon->id))
@@ -87,8 +87,8 @@ class CLI_Xf_Addon_Add extends CLI
 			
 			$dw = XenForo_DataWriter::create('XenForo_DataWriter_AddOn');
 			$dw->bulkSet(array(
-				'addon_id' 	=> $addon->id,
-				'title' 	=> $addon->name
+				'addon_id'	=> $addon->id,
+				'title'   	=> $addon->name
 			));
 			$dw->save();
 			
@@ -97,7 +97,7 @@ class CLI_Xf_Addon_Add extends CLI
 		}
 		else
 		{
-			$this->printInfo('skipped (already exists)');
+			$this->printMessage('skipped (already exists)');
 		}
 	}
 	
@@ -110,7 +110,7 @@ class CLI_Xf_Addon_Add extends CLI
 	 */
 	protected function createStructure(&$addon)
 	{
-		$this->printInfo('Creating folder structure.. ', false);
+		$this->printMessage('Creating folder structure.. ', false);
 		
 		$base = XfCli_Application::xfBaseDir();
 		
@@ -150,11 +150,11 @@ class CLI_Xf_Addon_Add extends CLI
 				$this->bail('Could not locate or create addon directory: ' . $addon->path);
 			}
 			
-			$this->printInfo('ok');
+			$this->printMessage('ok');
 		}
 		else
 		{
-			$this->printInfo('skipped (already exists)');
+			$this->printMessage('skipped (already exists)');
 		}
 		
 		// Append directory separator at the end of the path
@@ -165,10 +165,10 @@ class CLI_Xf_Addon_Add extends CLI
 		
 		if ($pos = strpos($addon->path, 'library/') !== false)
 		{
-			$namespace 			= substr($addon->path, $pos + 7);
-			$namespace 			= substr($namespace, 0, strlen($namespace)-1);
-			$namespace 			= str_replace(DIRECTORY_SEPARATOR, '_', $namespace);
-			$addon->namespace 	= $namespace;
+			$namespace       			= substr($addon->path, $pos + 7);
+			$namespace       			= substr($namespace, 0, strlen($namespace)-1);
+			$namespace       			= str_replace(DIRECTORY_SEPARATOR, '_', $namespace);
+			$addon->namespace	= $namespace;
 		}
 	}
 	

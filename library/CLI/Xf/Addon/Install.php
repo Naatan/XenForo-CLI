@@ -14,7 +14,7 @@ class CLI_Xf_Addon_Install extends CLI
 		$addonModel = XenForo_Model::create('XenForo_Model_AddOn');
 		try 
 		{
-			$this->printInfo('Installing addon...');
+			$this->printMessage('Installing addon...');
 
 			if (!file_exists($path) || !is_readable($path))
 			{
@@ -40,7 +40,7 @@ class CLI_Xf_Addon_Install extends CLI
 			{
 				if ($this->hasFlag('upgrade-if-exists'))
 				{
-					$this->printInfo('Addon exists, updating...');
+					$this->printMessage('Addon exists, updating...');
 					$updated = true;
 					$caches = $addonModel->installAddOnXml($document, (string)$document['addon_id']);
 				}
@@ -53,7 +53,7 @@ class CLI_Xf_Addon_Install extends CLI
 			$libraryPath = $this->_detectAddonLibrary((string)$document['addon_id'], (string)$document['title']);
 			if ($libraryPath === false)
 			{
-				$this->printInfo('Note: could not detect addon paths. It will need to be manually configured to work with the CLI');
+				$this->printMessage('Note: could not detect addon paths. It will need to be manually configured to work with the CLI');
 			}
 			else
 			{
@@ -79,7 +79,7 @@ class CLI_Xf_Addon_Install extends CLI
 
 			$this->manualRun('rebuild ' . implode(' ', $caches), false, false, false);
 
-			$this->printInfo('Addon ' . (isset($updated) ? 'updated' : 'installed'));
+			$this->printMessage('Addon ' . (isset($updated) ? 'updated' : 'installed'));
 		} 
 		catch (Exception $e)
 		{

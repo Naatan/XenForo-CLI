@@ -158,14 +158,14 @@ class CLI_Xf_Addon_Show extends CLI
 				$this->printEmptyLine(2);
 				
 				$string = 'Details for: ' . $entry['title'];
-				$this->printInfo($this->colorText($string, self::BOLD));
+				$this->printMessage($this->colorText($string, self::BOLD));
 				
 				$print = '';
 				for ($c=0;$c<strlen($string); $c++) {
 					$print .= '=';
 				}
 				
-				$this->printInfo($print);
+				$this->printMessage($print);
 				
 				$this->printTable($entry['data']);
 			}

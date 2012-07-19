@@ -47,13 +47,13 @@ class CLI_Xf_Addon_Uninstall extends CLI
 		// Confirmation
 		if ( ! $this->hasFlag('y'))
 		{
-			$this->printInfo('You are about to delete..');
+			$this->printMessage('You are about to delete..');
 			
 			// Print summary of data that is to be deleted
 			if ($this->hasFlag('delete-files'))
 			{
 				$files 		= trim(shell_exec('find ' . $base . $file . ' -type f | wc -l'));
-				$folders 	= trim(shell_exec('find ' . $base . $file . ' -type f | wc -l'));
+				$folders 	= trim(shell_exec('find ' . $base . $file . ' -type d | wc -l'));
 				
 				$this->printTable(array(
 					array('Addon:', 		$addon['title'], 	'id: '.$addon['addon_id']),
@@ -64,7 +64,7 @@ class CLI_Xf_Addon_Uninstall extends CLI
 			else
 			{
 				$this->printEmptyLine();
-				$this->printInfo('   Addon: ' . $addon['title'] . ' ('.$addon['addon_id'].')');
+				$this->printMessage('  Addon: ' . $addon['title'] . ' ('.$addon['addon_id'].')');
 			}
 			
 			// Ask for confirmation
@@ -80,19 +80,19 @@ class CLI_Xf_Addon_Uninstall extends CLI
 		}
 		
 		// Delete DB data
-		$this->printInfo('Deleting DB data.. ', false);
+		$this->printMessage('Deleting DB data.. ', false);
 		$addonModel = XenForo_Model::create('XenForo_Model_AddOn');
 		$addonModel->deleteAddOnMasterData($addonId);
-		$this->printInfo('ok');
+		$this->printMessage('ok');
 		
 		// Delete files
 		if ($this->hasFlag('delete-files'))
 		{
-			$this->printInfo('Deleting files.. ', false);
+			$this->printMessage('Deleting files.. ', false);
 			
 			if ($deleted = shell_exec('rm -Rv ' . $base . $file))
 			{
-				$this->printInfo('ok');
+				$this->printMessage('ok');
 			}
 			else
 			{
@@ -102,7 +102,7 @@ class CLI_Xf_Addon_Uninstall extends CLI
 		
 		// Done
 		$this->printEmptyLine();
-		$this->printInfo('Addon delete');
+		$this->printMessage('Addon delete');
 		
 	}
 	

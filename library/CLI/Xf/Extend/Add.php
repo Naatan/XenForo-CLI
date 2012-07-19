@@ -74,7 +74,7 @@ class CLI_Xf_Extend_Add extends CLI
 	 */
 	protected function addToFile($addonName, $extend, $extendWith)
 	{
-		$this->printInfo('Updating Listener File.. ', false);
+		$this->printMessage('Updating Listener File.. ', false);
 		
 		// Detect class info
 		$className 		= $addonName . '_Listen';
@@ -112,14 +112,14 @@ class CLI_Xf_Extend_Add extends CLI
 		
 		if ($result)
 		{
-			$this->printInfo('ok');
+			$this->printMessage('ok');
 		}
 		else
 		{
-			$this->printInfo('skipped (already exists)');
+			$this->printMessage('skipped (already exists)');
 		}
 		
-		$this->printInfo('Creating Class File.. ', false);
+		$this->printMessage('Creating Class File.. ', false);
 		
 		// Auto create extend class if it doesn't exist et
 		if ( ! XfCli_Helpers::classExists($extendWith))
@@ -130,11 +130,11 @@ class CLI_Xf_Extend_Add extends CLI
 			
 			XfCli_ClassGenerator::create($extendWith, $class);
 			
-			$this->printInfo('ok');
+			$this->printMessage('ok');
 		}
 		else
 		{
-			$this->printInfo('skipped (alread exists)');
+			$this->printMessage('skipped (alread exists)');
 		}
 	}
 	

@@ -47,7 +47,7 @@ class CLI_Xf_Template_Add extends CLI
 	 */
 	protected function addToDb($addon, $name, $admin)
 	{
-		$this->printInfo("Adding template to database.. ", false);
+		$this->printMessage("Adding template to database.. ", false);
 		
 		// Validate if listener already exists
 		$templateModel 	= XenForo_Model::create('XenForo_Model_' . ($admin ? 'AdminTemplate' : 'Template'));
@@ -63,7 +63,7 @@ class CLI_Xf_Template_Add extends CLI
 		
 		if ($template)
 		{
-			$this->printInfo("skipped (already exists)");
+			$this->printMessage("skipped (already exists)");
 			return;
 		}
 		
@@ -82,7 +82,7 @@ class CLI_Xf_Template_Add extends CLI
 			$dw->bulkSet($dwInput);
 			$dw->save();
 			
-			$this->printInfo("ok");
+			$this->printMessage("ok");
 		}
 		catch (Exception $e)
 		{

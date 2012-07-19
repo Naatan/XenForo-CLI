@@ -6,6 +6,27 @@
 class XfCli_Helpers
 {
 	
+	public static function writeToFile($file, $contents, $createPath = false)
+	{
+		$config 	= XfCli_Application::getConfig();
+		$filePath	= dirname($file);
+		
+		if ( ! is_dir($filePath) AND $createPath)
+		{
+			mkdir($filePath, octdec($config->dir_mask), true);
+		}
+		
+		if ( ! is_dir($filePath) OR ! file_put_contents($file, trim($contents)))
+		{
+			CLI::getInstance()->bail("File could not be created: " . $file);
+			return false;
+		}
+		
+		chmod($file, octdec($config->file_mask));
+		
+		return true;
+	}
+	
 	/**
 	 * Merge 2 objects (basically array_merge_recursive for objects)
 	 * 
@@ -337,7 +358,7 @@ class XfCli_Helpers
 		$contents = preg_replace('/(.*class)\s*?'.$className.'/', '$1 ' . $alias, $contents);
 		
 		$filePath = tempnam(sys_get_temp_dir(), 'xfcli');
-		file_put_contents($filePath, $contents);
+		XfCli_Helpers::writeToFile($filePath, $contents);
 		
 		require_once $filePath;
 		

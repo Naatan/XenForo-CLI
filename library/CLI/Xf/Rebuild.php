@@ -18,11 +18,13 @@ class CLI_Xf_Rebuild extends CLI
 
 	public function run()
 	{
-		$caches = func_get_args();
-		$caches = explode(',', $caches);
-		array_walk($caches, create_function('&$val', '$val = trim($val);')); 
 		
-		if (empty($caches) AND $this->hasOption('caches'))
+		$t = microtime(true);
+		$m = memory_get_usage(true);
+		
+		$caches = func_get_args();
+		
+		if (empty($caches))
 		{
 			switch ($this->getOption('caches'))
 			{
@@ -67,8 +69,9 @@ class CLI_Xf_Rebuild extends CLI
 		{
 			$this->bail('No caches were specified to rebuild');
 		}
-
-		$this->printInfo('Rebuilding caches...');
+		
+		$this->printMessage('Caches to rebuild: ' . implode(', ', $caches));
+		$this->printEmptyLine();
 
 		$validCaches = array();
 		foreach (XenForo_CacheRebuilder_Abstract::$builders AS $cache => $meh)
@@ -88,31 +91,70 @@ class CLI_Xf_Rebuild extends CLI
 
 			if (isset($validCaches[$cache]))
 			{
-				$this->printInfo("\t" . (string) XenForo_CacheRebuilder_Abstract::getCacheRebuilder($validCaches[$cache])->getRebuildMessage(), false);
+				$print 	= "Rebuilding " . (string) XenForo_CacheRebuilder_Abstract::getCacheRebuilder($validCaches[$cache])->getRebuildMessage() . ".. ";
+				$l 		= 35 - strlen($print);
+				
+				if ($l > 0)
+				{
+					for ($c=0;$c<$l; $c++)
+					{
+						$print .= ' ';
+					}
+				}
+				
+				$this->printMessage($print, false);
 				$this->_rebuild($validCaches[$cache], 0, array(), '');
-				$this->printInfo('');
+				$this->printEmptyLine();
 			}
 		}
+		
+		$this->printEmptyLine();
+		$this->printMessage('Done');
+		$this->printEmptyLine();
+		
+		$t = abs(microtime(true) - $t);
+		$m = abs(memory_get_usage(true) - $m);
+		$m = $m / 1024 / 1024;
+		
+		$this->printInfo('Execution time: ' . number_format($t, 2) . ' seconds');
+		$this->printInfo('Memory usage: ' . number_format($m, 2) . 'mb');
+		
 	}
 
-	protected function _rebuild($cache, $position, $options, $message)
+	protected function _rebuild($cache, $position, $options, $message, $t = null, $m = null)
 	{
+		if ($t === null)
+		{
+			$t = microtime(true);
+			$m = memory_get_usage(true);
+		}
+		
 		$rebuilt = XenForo_CacheRebuilder_Abstract::getCacheRebuilder($cache)->rebuild($position, $options, $message);
-
+		
 		// Special case
 		/*if ($cache == 'DailyStats')
 		{
 			$message = "\n\t\t" . $message;
 			$this->printInfo($message, false);
 		}
-		else*/ if ( ! empty($message))
-		{
-			$this->printInfo('.', false);
-		}
+		else*/
+		
+		//if ( ! empty($message))
+		//{
+		//	$this->printMessage('.', false);
+		//}
 
 		if (is_int($rebuilt))
 		{
-			$this->_rebuild($cache, $rebuilt, $options, $message);
+			$this->_rebuild($cache, $rebuilt, $options, $message, $t, $m);
+		}
+		else
+		{
+			$t = abs(microtime(true) - $t);
+			$m = abs(memory_get_usage(true) - $m);
+			$m = $m / 1024 / 1024;
+			
+			$this->printMessage('done (' . number_format($t, 2). 'sec, ' . number_format($m, 2) . 'mb)', false);
 		}
 	}
 }

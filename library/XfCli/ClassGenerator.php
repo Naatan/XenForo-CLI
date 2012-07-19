@@ -200,17 +200,8 @@ class XfCli_ClassGenerator
 			// Append class to file
 			$file->setClass($class);
 			
-			// Create parent folder structure if necessary
-			if ( ! is_dir(dirname($filePath)))
-			{
-				mkdir(dirname($filePath), 0755, true);
-			}
-			
 			// Write to file
-			if ( ! is_dir(dirname($filePath)) OR ! file_put_contents($filePath, trim($file->generate())))
-			{
-				CLI::getInstance()->bail("File could not be created: " . $filePath);
-			}
+			XfCli_Helpers::writeToFile($filePath, $file->generate(), true);
 			
 		}
 		else

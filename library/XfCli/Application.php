@@ -184,7 +184,7 @@ class XfCli_Application
 		$existingConfig = self::loadConfigJson($file);
 		$config 		= XfCli_Helpers::objectMerge($existingConfig, $config);
 		
-		if ( ! file_put_contents($file, XfCli_Helpers::jsonEncode($config)))
+		if ( ! XfCli_Helpers::writeToFile($file, XfCli_Helpers::jsonEncode($config)))
 		{
 			return false;
 		}
