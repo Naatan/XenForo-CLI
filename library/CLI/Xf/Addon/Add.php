@@ -50,7 +50,7 @@ class CLI_Xf_Addon_Add extends CLI
 		// Parse addon ID
 		if (empty($addon->id))
 		{
-			$addon->id       	= strtolower(preg_replace('/[^a-z0-9]/i', '', $addon->name));
+			$addon->id       	= preg_replace('/[^a-z0-9]/i', '', $addon->name);
 			$addon->namespace	= ucfirst($addon->id);
 		}
 		
@@ -133,7 +133,7 @@ class CLI_Xf_Addon_Add extends CLI
 		else
 		{
 			// Otherwise generate the path based on addon id
-			$addon->path = 'library' . DIRECTORY_SEPARATOR . ucfirst(strtolower($addon->id));
+			$addon->path = 'library' . DIRECTORY_SEPARATOR . ucfirst($addon->id);
 		}
 		
 		// Strip the base path from the addon path
@@ -165,9 +165,9 @@ class CLI_Xf_Addon_Add extends CLI
 		
 		if ($pos = strpos($addon->path, 'library/') !== false)
 		{
-			$namespace       			= substr($addon->path, $pos + 7);
-			$namespace       			= substr($namespace, 0, strlen($namespace)-1);
-			$namespace       			= str_replace(DIRECTORY_SEPARATOR, '_', $namespace);
+			$namespace       	= substr($addon->path, $pos + 7);
+			$namespace       	= substr($namespace, 0, strlen($namespace)-1);
+			$namespace       	= str_replace(DIRECTORY_SEPARATOR, '_', $namespace);
 			$addon->namespace	= $namespace;
 		}
 	}
