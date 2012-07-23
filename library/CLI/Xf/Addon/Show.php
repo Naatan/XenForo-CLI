@@ -28,11 +28,13 @@ class CLI_Xf_Addon_Show extends CLI
 		'CodeEventListener' => array(
 			'title' 	=> 'Code Event Listeners',
 			'model'		=> 'XenForo_Model_CodeEvent',
-			'method'	=> 'getEventListenersByAddOn'
+			'method'	=> 'getEventListenersByAddOn',
+			'fields'	=>  array('event_id','callback_class','callback_method','active')
 		),
 		'Cron' => array(
 			'title' 	=> 'Cron Jobs',
-			'method'	=> 'getCronEntriesByAddOnId'
+			'method'	=> 'getCronEntriesByAddOnId',
+			'fields'	=> array('entry_id', 'cron_class', 'cron_method', 'active', 'next_run')
 		),
 		'EmailTemplate' => array(
 			'title' 	=> 'E-Mail Templates',
@@ -40,7 +42,8 @@ class CLI_Xf_Addon_Show extends CLI
 		),
 		'Option' => array(
 			'title' 	=> 'Options',
-			'method'	=> 'getOptionsByAddOn'
+			'method'	=> 'getOptionsByAddOn',
+			'fields'	=> array('option_id','option_value','default_value')
 		),
 		'OptionGroup' => array(
 			'title' 	=> 'Option Groups',
@@ -49,7 +52,8 @@ class CLI_Xf_Addon_Show extends CLI
 		),
 		'Permission' => array(
 			'title' 	=> 'Permissions',
-			'method'	=> 'getPermissionsByAddOn'
+			'method'	=> 'getPermissionsByAddOn',
+			'fields'	=> array('permission_id', 'permission_group_id', 'interface_group_id', 'depend_permission_id')
 		),
 		'PermissionGroup' => array(
 			'title' 	=> 'Permission Groups',
@@ -58,15 +62,18 @@ class CLI_Xf_Addon_Show extends CLI
 		),
 		'Phrase' => array(
 			'title' 	=> 'Phrases',
-			'method'	=> 'getMasterPhrasesInAddOn'
+			'method'	=> 'getMasterPhrasesInAddOn',
+			'fields'	=> array('title', 'phrase_text', 'global_cache')
 		),
 		'PublicRoute' => array(
 			'title' 	=> 'Public Routes',
-			'callback'	=> 'callbackPublicRoute'
+			'callback'	=> 'callbackPublicRoute',
+			'fields'	=> array('original_prefix', 'route_class')
 		),
 		'AdminRoute' => array(
 			'title' 	=> 'Admin Routes',
-			'callback'	=> 'callbackAdminRoute'
+			'callback'	=> 'callbackAdminRoute',
+			'fields'	=> array('original_prefix', 'route_class')
 		),
 		'StyleProperty' => array(
 			'title' 	=> 'Style Properties',
@@ -74,7 +81,8 @@ class CLI_Xf_Addon_Show extends CLI
 		),
 		'Template'		=> array(
 			'title'		=> 'Templates',
-			'method'	=> 'getMasterTemplatesInAddOn'
+			'method'	=> 'getMasterTemplatesInAddOn',
+			'fields'	=> array('title', 'template')
 		),
 		'BbCode'		=> array(
 			'title'		=> 'BBCode\'s',
@@ -127,7 +135,7 @@ class CLI_Xf_Addon_Show extends CLI
 			
 			if ($entry['stat'])
 			{
-				$stats[] = array($entry['title'], count($entry['stat']));
+				$stats[] = array($entry['title'], $entry['stat']);
 			}
 		}
 		
@@ -175,14 +183,25 @@ class CLI_Xf_Addon_Show extends CLI
 	/**
 	 * Get DB entry
 	 * 
-	 * @param		string		$name			
+	 * @param		string		$_name			
 	 * @param		string		$addonId
 	 * 
 	 * @return		bool|array						
 	 */
-	protected function getDataEntry($name, $addonId)
+	protected function getDataEntry($_name, $addonId)
 	{
-		if ( ! isset($this->_dataEntries[$name]))
+		$variations = array($_name, substr($_name, 0, -1), $_name. 's');
+		array_walk($variations, create_function('&$val', '$val = ucfirst($val);'));
+		
+		foreach ($variations AS $variation)
+		{
+			if (isset($this->_dataEntries[$variation]))
+			{
+				$name = $variation;
+			}
+		}
+		
+		if ( ! isset($name))
 		{
 			return false;
 		}
@@ -200,6 +219,29 @@ class CLI_Xf_Addon_Show extends CLI
 			$model 	= call_user_func(array('XenForo_Model','create'), $model);
 			$data 	= call_user_func(array($model, $entry['method']), $addonId);
 			$stat 	= count($data);
+		}
+		
+		if ($data)
+		{
+			foreach ($data AS &$d)
+			{
+				foreach ($d AS $f => &$v)
+				{
+					$v = trim($v);
+					$v = str_replace("\n", '\n',$v);
+					
+					if (isset($entry['fields']) AND ! in_array($f, $entry['fields']))
+					{
+						unset($d[$f]);
+						continue;
+					}
+					
+					if (strlen($v) > 50)
+					{
+						$v = substr($v, 0, 50) . ' [..]';
+					}
+				}
+			}
 		}
 		
 		return array(
