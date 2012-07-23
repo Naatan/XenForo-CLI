@@ -29,7 +29,10 @@ class CLI_Xf_Listener_Add extends CLI
 		}
 		
 		// Append listener to file (unless we want to skip it)
-		$this->addToFile($addon, $event);
+		if ($this->hasFlag('skip-file'))
+		{
+			$this->addToFile($addon, $event);
+		}
 		
 		// Add listener to database
 		$this->addToDb($addon, $event);

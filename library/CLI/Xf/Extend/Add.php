@@ -58,7 +58,7 @@ class CLI_Xf_Extend_Add extends CLI
 		
 		// Add the listener in a seperate process as this one has the old version of the class loaded
 		$classType = $this->getClassType($extend);
-		$this->manualRun('listener add load_class_' . $classType, false);
+		$this->manualRun('listener add load_class_' . $classType . ' --skip-file', false);
 		
 		$this->printMessage('Class Extended');
 	}
