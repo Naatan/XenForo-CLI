@@ -40,6 +40,14 @@ class Commands extends PHPUnit_Framework_TestCase
 	/**
 	 * @runInSeparateProcess enabled
 	 */
+	public function test__AddonShowDetails()
+	{
+		self::runCommand(array('addon', 'show', self::getAddon(), '--details'));
+	}
+	
+	/**
+	 * @runInSeparateProcess enabled
+	 */
 	public function test__ExtendAdd()
 	{
 		self::runCommand(array('extend', 'add', 'XenForo_ControllerPublic_Account'));
