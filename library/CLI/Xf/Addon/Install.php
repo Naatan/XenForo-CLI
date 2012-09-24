@@ -4,15 +4,15 @@ class CLI_Xf_Addon_Install extends CLI
 {
 	protected $_help = '
 		usage: addon install <xml file / folder> [--paths=PATHS]
-			
-			--paths 
+
+			--paths
 				list of paths this addon is associated with, will be added to the config to help with updating and removing
 	';
 
 	public function run($path)
 	{
 		$addonModel = XenForo_Model::create('XenForo_Model_AddOn');
-		try 
+		try
 		{
 			$this->printMessage('Installing addon...');
 
@@ -32,7 +32,7 @@ class CLI_Xf_Addon_Install extends CLI
 				);
 			}
 
-			try 
+			try
 			{
 				$caches = $addonModel->installAddOnXml($document);
 			}
@@ -57,30 +57,43 @@ class CLI_Xf_Addon_Install extends CLI
 			}
 			else
 			{
+				$namespace = substr($libraryPath, 8);
+				$namespace = substr($namespace, 0, strpos($namespace, DIRECTORY_SEPARATOR));
+
 				$addon = (object) array(
 					'id' => (string)$document['addon_id'],
 					'name' => (string)$document['title'],
-					'namespace' => substr($libraryPath, 8, strlen($libraryPath) - strpos($libraryPath, '/', 8) - 8),
+					'namespace' => $namespace,
 					'path' => $libraryPath,
 				);
-				$config = array(
-					'addon' => $addon, 
-					'paths' => $this->getOption('paths'), 
-				);
-				$extraConfig = $this->getOption('extra-config');
-				if ($extraConfig AND is_array($extraConfig))
-				{
-					$config = array_merge($config, $extraConfig);
-				}
 
-				XfCli_Application::writeConfig($config, XfCli_Application::xfBaseDir() . $addon->path . DIRECTORY_SEPARATOR . '.xfcli-config');
-				$this->getParent()->selectAddon($addon->namespace);
+				$configPath = $addon->path . DIRECTORY_SEPARATOR . '.xfcli-config';
+				if ( ! file_exists($configPath))
+				{
+					$config = array(
+						'addon' => $addon,
+						'paths' => $this->getOption('paths'),
+					);
+					$extraConfig = $this->getOption('extra-config');
+					if ($extraConfig AND is_array($extraConfig))
+					{
+						$config = array_merge($config, $extraConfig);
+					}
+
+					XfCli_Application::writeConfig($config, $configPath);
+
+					$this->getParent()->selectAddon($addon->id);
+				}
+				else
+				{
+					$this->getParent()->getAddonByPath($configPath);
+				}
 			}
 
 			$this->manualRun('rebuild ' . implode(' ', $caches), false, false, false);
 
 			$this->printMessage('Addon ' . (isset($updated) ? 'updated' : 'installed'));
-		} 
+		}
 		catch (Exception $e)
 		{
 			if (isset($caches))
@@ -102,7 +115,7 @@ class CLI_Xf_Addon_Install extends CLI
 		// then try the root with close matches.
 		$base = XfCli_Application::xfBaseDir();
 		$possibleNames = array(
-			strtolower($addonId), 
+			strtolower($addonId),
 			strtolower(str_replace(' ', '_', $addonName)),
 			strtolower(str_replace(' ', '', $addonName))
 		);
@@ -158,7 +171,13 @@ class CLI_Xf_Addon_Install extends CLI
 		{
 			if (isset($nextLevelFolders[$name]))
 			{
-				return 'library/' . dirname($nextLevelFolders[$name]->getPathname) . '/' . $nextLevelFolders[$name]->getFileName;
+				$folder = dirname($nextLevelFolders[$name]->getPathname());
+				if (($pos = strrpos($folder, DIRECTORY_SEPARATOR)) !== false)
+				{
+					$folder = substr($folder, $pos + 1);
+				}
+
+				return 'library/' . $folder . '/' . $nextLevelFolders[$name]->getFileName();
 			}
 		}
 
@@ -179,7 +198,7 @@ class CLI_Xf_Addon_Install extends CLI
 					}
 				}
 			}
-		} 
+		}
 		if ($match)
 		{
 			return 'library/' . $match;
